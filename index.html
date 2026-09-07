@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+  <meta name="theme-color" content="#050609" />
+  <title>Ambient Sleep</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body data-sound="rain">
+  <main id="app" aria-label="睡眠導入アプリ">
+    <div class="ambient" aria-hidden="true">
+      <div class="glow glow-a"></div>
+      <div class="glow glow-b"></div>
+      <div class="glow glow-c"></div>
+      <div class="glow glow-d"></div>
+      <div class="veil"></div>
+    </div>
+
+    <button id="stageTap" class="stage-tap" aria-label="設定メニューを表示"></button>
+
+    <div id="firstHint" class="first-hint" role="status">画面をタップして設定</div>
+
+    <div id="remainingGhost" class="remaining-ghost" aria-live="off">30:00</div>
+
+    <div id="wakeWarning" class="wake-warning" hidden>
+      この端末では画面スリープ防止を利用できません
+    </div>
+
+    <section id="menu" class="menu" aria-label="再生設定" aria-hidden="true">
+      <div class="menu-handle" aria-hidden="true"></div>
+
+      <div class="menu-head">
+        <div>
+          <div class="eyebrow">AMBIENT SOUND</div>
+          <div id="currentSoundLabel" class="current-sound">雨</div>
+        </div>
+        <div id="remainingMenu" class="remaining-menu">30:00</div>
+      </div>
+
+      <div class="sound-grid" role="group" aria-label="環境音">
+        <button class="sound-choice active" data-sound="rain" type="button">雨</button>
+        <button class="sound-choice" data-sound="wave" type="button">波</button>
+        <button class="sound-choice" data-sound="breeze" type="button">そよ風</button>
+        <button class="sound-choice" data-sound="forest" type="button">森の奥</button>
+      </div>
+
+      <div class="time-row" role="group" aria-label="再生時間">
+        <button class="time-choice" data-minutes="15" type="button">15</button>
+        <button class="time-choice active" data-minutes="30" type="button">30</button>
+        <button class="time-choice" data-minutes="60" type="button">60</button>
+        <button class="time-choice" data-minutes="90" type="button">90</button>
+        <button id="customTimeButton" class="time-choice" data-minutes="custom" type="button">任意</button>
+      </div>
+
+      <div id="customTimeWrap" class="custom-time" hidden>
+        <label for="customMinutes">分</label>
+        <input id="customMinutes" type="number" inputmode="numeric" min="1" max="720" value="45" />
+      </div>
+
+      <div class="volume-row">
+        <span>音量</span>
+        <input id="volume" type="range" min="0" max="100" value="42" aria-label="音量" />
+      </div>
+
+      <div class="action-row">
+        <button id="stopButton" class="secondary-action" type="button" disabled>停止</button>
+        <button id="startButton" class="primary-action" type="button">再生開始</button>
+      </div>
+    </section>
+
+    <audio id="ambientAudio" preload="auto" loop playsinline></audio>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

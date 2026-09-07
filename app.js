@@ -7,6 +7,7 @@
     wave:   { label: '波',     src: 'audio/wave.mp3' },
     breeze: { label: 'そよ風', src: 'audio/breeze.mp3' },
     forest: { label: '森の奥', src: 'audio/forest.mp3' },
+    none:   { label: '無音',   src: null },
   };
 
   const DEFAULT_SOUND = 'rain';
@@ -29,6 +30,7 @@
   const customTimeWrap = document.getElementById('customTimeWrap');
   const customMinutes = document.getElementById('customMinutes');
   const volume = document.getElementById('volume');
+  const fullscreenButton = document.getElementById('fullscreenButton');
   const startButton = document.getElementById('startButton');
   const stopButton = document.getElementById('stopButton');
 
@@ -45,10 +47,19 @@
   let volumeGain = null;
 
   const wakeLockSupported = 'wakeLock' in navigator;
+  const fullscreenSupported = Boolean(document.fullscreenEnabled && document.documentElement.requestFullscreen);
   if (!wakeLockSupported) wakeWarning.hidden = false;
+  if (!fullscreenSupported) {
+    fullscreenButton.disabled = true;
+    fullscreenButton.textContent = '全画面不可';
+  }
 
-  function initBackgroundDots() {
+  function initBackgroundEffect() {
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const counts = { rain: 135, wave: 84, breeze: 90, forest: 64, none: 48 };
+    const depthSize = [0.48, 0.78, 1.18];
+    const depthAlpha = [0.34, 0.58, 0.88];
+    const depthSpeed = [0.48, 0.82, 1.28];
 
     document.querySelectorAll('[data-bnto-bgdots]').forEach(bg => {
       if (bg.dataset.bntoInit) return;
@@ -59,10 +70,10 @@
       const ctx = canvas.getContext('2d');
       if (!ctx) return;
 
-      const count = Number.parseInt(bg.dataset.count, 10) || 40;
-      let dots = [];
-      let width = 0;
-      let height = 0;
+      let particles = [];
+      let mode = body.dataset.sound || DEFAULT_SOUND;
+      let width = 1;
+      let height = 1;
       let raf = 0;
       let shown = true;
       let lastFrame = 0;
@@ -76,66 +87,127 @@
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       }
 
-      function seed() {
-        dots = Array.from({ length: count }, () => {
-          const angle = Math.random() * Math.PI * 2;
-          const speed = 0.045 + Math.random() * 0.11;
-          return {
-            x: Math.random() * width,
-            y: Math.random() * height,
-            r: 1.2 + Math.random() * 3.2,
-            vx: Math.cos(angle) * speed,
-            vy: Math.sin(angle) * speed,
-            a: 0.24 + Math.random() * 0.54,
-            phase: Math.random() * Math.PI * 2,
-            pulse: 0.002 + Math.random() * 0.004,
-          };
-        });
+      function makeParticle(index) {
+        const depth = index % 3;
+        const scale = depthSize[depth];
+        const x = Math.random() * width;
+        const y = Math.random() * height;
+        return {
+          depth,
+          x,
+          y,
+          originX: x,
+          originY: y,
+          baseY: y,
+          radius: (1.1 + Math.random() * 1.65) * scale,
+          alpha: depthAlpha[depth] * (0.72 + Math.random() * 0.28),
+          speed: (0.45 + Math.random() * 0.52) * depthSpeed[depth],
+          phase: Math.random() * Math.PI * 2,
+          phase2: Math.random() * Math.PI * 2,
+          amplitude: (16 + Math.random() * 34) * scale,
+        };
       }
 
-      function draw() {
+      function seed(nextMode = body.dataset.sound || DEFAULT_SOUND) {
+        mode = nextMode;
+        const count = counts[mode] || counts.none;
+        particles = Array.from({ length: count }, (_, index) => makeParticle(index));
+      }
+
+      function wrapRain(particle) {
+        if (particle.y <= height + 14) return;
+        particle.y = -14 - Math.random() * height * 0.12;
+        particle.x = Math.random() * width;
+        particle.originX = particle.x;
+      }
+
+      function wrapBreeze(particle) {
+        if (particle.x <= width + 20) return;
+        particle.x = -20 - Math.random() * width * 0.16;
+        particle.baseY = Math.random() * height;
+        particle.y = particle.baseY;
+      }
+
+      function advance(particle, now) {
+        const scale = depthSize[particle.depth];
+
+        if (mode === 'rain') {
+          particle.y += particle.speed * 1.25;
+          particle.x += Math.sin(now * 0.00018 + particle.phase) * 0.055 * scale;
+          wrapRain(particle);
+          return;
+        }
+
+        if (mode === 'wave') {
+          const span = width * (0.07 + particle.depth * 0.035);
+          particle.x = particle.originX + Math.sin(now * 0.00015 + particle.phase) * span;
+          particle.y = particle.originY + Math.sin(now * 0.00009 + particle.phase2) * (8 + 8 * scale);
+          return;
+        }
+
+        if (mode === 'breeze') {
+          particle.x += particle.speed * 0.72;
+          const meander = Math.sin(particle.x * 0.010 + particle.phase + now * 0.00022) * particle.amplitude;
+          const secondary = Math.sin(particle.x * 0.0036 + particle.phase2 - now * 0.00011) * particle.amplitude * 0.38;
+          particle.y = particle.baseY + meander + secondary;
+          wrapBreeze(particle);
+          return;
+        }
+
+        if (mode === 'forest') {
+          particle.x = particle.originX + Math.sin(now * 0.00007 + particle.phase) * (10 + particle.amplitude * 0.24);
+          particle.y = particle.originY + Math.cos(now * 0.00006 + particle.phase2) * (12 + particle.amplitude * 0.28);
+          return;
+        }
+
+        particle.x = particle.originX + Math.sin(now * 0.000055 + particle.phase) * (7 + particle.amplitude * 0.14);
+        particle.y = particle.originY + Math.cos(now * 0.00005 + particle.phase2) * (8 + particle.amplitude * 0.16);
+      }
+
+      function drawParticle(particle, color, now) {
+        const pulse = 0.72 + 0.28 * (0.5 + 0.5 * Math.sin(now * 0.00022 + particle.phase * 0.16));
+        const alpha = Math.min(1, particle.alpha * pulse);
+        const radius = particle.radius;
+
+        ctx.fillStyle = color;
+        ctx.globalAlpha = alpha * 0.20;
+        ctx.beginPath();
+        if (mode === 'rain') {
+          ctx.ellipse(particle.x, particle.y, radius * 1.55, radius * 4.6, 0, 0, Math.PI * 2);
+        } else if (mode === 'wave') {
+          ctx.ellipse(particle.x, particle.y, radius * 3.0, radius * 1.75, 0, 0, Math.PI * 2);
+        } else if (mode === 'breeze') {
+          ctx.ellipse(particle.x, particle.y, radius * 3.5, radius * 1.45, -0.16, 0, Math.PI * 2);
+        } else {
+          ctx.arc(particle.x, particle.y, radius * 2.7, 0, Math.PI * 2);
+        }
+        ctx.fill();
+
+        ctx.globalAlpha = alpha;
+        ctx.beginPath();
+        if (mode === 'rain') {
+          ctx.ellipse(particle.x, particle.y, Math.max(0.55, radius * 0.48), radius * 1.9, 0, 0, Math.PI * 2);
+        } else if (mode === 'wave') {
+          ctx.ellipse(particle.x, particle.y, radius * 1.45, radius * 0.72, 0, 0, Math.PI * 2);
+        } else if (mode === 'breeze') {
+          ctx.ellipse(particle.x, particle.y, radius * 1.7, radius * 0.56, -0.16, 0, Math.PI * 2);
+        } else {
+          ctx.arc(particle.x, particle.y, radius, 0, Math.PI * 2);
+        }
+        ctx.fill();
+      }
+
+      function draw(now = performance.now()) {
         ctx.clearRect(0, 0, width, height);
-        ctx.fillStyle = getComputedStyle(bg).getPropertyValue('--c1').trim() || '#9cc4ee';
-
-        dots.forEach(dot => {
-          const pulse = 0.82 + Math.sin(dot.phase) * 0.18;
-          ctx.globalAlpha = dot.a * pulse;
-          ctx.beginPath();
-          ctx.arc(dot.x, dot.y, dot.r, 0, Math.PI * 2);
-          ctx.fill();
-        });
-
+        const color = getComputedStyle(bg).getPropertyValue('--c1').trim() || '#9cc4ee';
+        particles.forEach(particle => drawParticle(particle, color, now));
         ctx.globalAlpha = 1;
       }
 
-      function stepDot(dot) {
-        const sound = document.body.dataset.sound;
-        if (sound === 'rain') {
-          dot.x += dot.vx * 0.35;
-          dot.y += Math.abs(dot.vy) + 0.06;
-        } else if (sound === 'wave') {
-          dot.x += dot.vx * 1.35;
-          dot.y += dot.vy * 0.28;
-        } else if (sound === 'breeze') {
-          dot.x += Math.abs(dot.vx) + 0.05;
-          dot.y += dot.vy * 0.65;
-        } else {
-          dot.x += dot.vx * 0.45;
-          dot.y += dot.vy * 0.45;
-        }
-
-        dot.phase += dot.pulse;
-
-        if (dot.x < -8) dot.x = width + 8;
-        if (dot.x > width + 8) dot.x = -8;
-        if (dot.y < -8) dot.y = height + 8;
-        if (dot.y > height + 8) dot.y = -8;
-      }
-
       function tick(now) {
-        if (!lastFrame || now - lastFrame >= 33) {
-          dots.forEach(stepDot);
-          draw();
+        if (!lastFrame || now - lastFrame >= 40) {
+          particles.forEach(particle => advance(particle, now));
+          draw(now);
           lastFrame = now;
         }
         raf = requestAnimationFrame(tick);
@@ -159,6 +231,11 @@
       rebuild();
       start();
 
+      document.addEventListener('ambient-sound-change', event => {
+        seed(event.detail?.sound || body.dataset.sound || DEFAULT_SOUND);
+        draw();
+      });
+
       if ('ResizeObserver' in window) {
         new ResizeObserver(rebuild).observe(bg);
       } else {
@@ -175,7 +252,7 @@
     });
   }
 
-  initBackgroundDots();
+  initBackgroundEffect();
 
   function formatRemaining(ms) {
     const totalSeconds = Math.max(0, Math.ceil(ms / 1000));
@@ -223,35 +300,10 @@
     menuHideTimer = setTimeout(hideMenu, MENU_HIDE_MS);
   }
 
-  function setSound(soundKey) {
-    selectedSound = soundKey;
-    body.dataset.sound = soundKey;
-    currentSoundLabel.textContent = SOUNDS[soundKey].label;
-    soundChoices.forEach(btn => btn.classList.toggle('active', btn.dataset.sound === soundKey));
-
-    if (isPlaying) {
-      const currentEnd = endTimeMs;
-      audio.pause();
-      audio.src = SOUNDS[soundKey].src;
-      audio.load();
-      audio.play().catch(() => {});
-      endTimeMs = currentEnd;
-    } else {
-      audio.src = SOUNDS[soundKey].src;
-      audio.load();
-    }
-    scheduleMenuHide();
-  }
-
-  function setMinutes(value) {
-    selectedMinutes = value === 'custom' ? 'custom' : Number(value);
-    timeChoices.forEach(btn => {
-      const key = btn.dataset.minutes === 'custom' ? 'custom' : Number(btn.dataset.minutes);
-      btn.classList.toggle('active', key === selectedMinutes);
-    });
-    customTimeWrap.hidden = selectedMinutes !== 'custom';
-    updateIdleRemaining();
-    scheduleMenuHide();
+  function clearAudioElement() {
+    audio.pause();
+    audio.removeAttribute('src');
+    audio.load();
   }
 
   async function ensureAudioGraph() {
@@ -282,7 +334,7 @@
 
   function scheduleFade(durationMs) {
     if (!sessionGain || !audioContext) return;
-    const totalSeconds = durationMs / 1000;
+    const totalSeconds = Math.max(1, durationMs / 1000);
     const fadeSeconds = totalSeconds < MAX_FADE_SECONDS
       ? Math.max(1, totalSeconds * 0.4)
       : MAX_FADE_SECONDS;
@@ -296,6 +348,55 @@
     sessionGain.gain.linearRampToValueAtTime(0.0001, end);
   }
 
+  async function playSelectedSound(durationMs) {
+    const sound = SOUNDS[selectedSound];
+    if (!sound.src) {
+      clearAudioElement();
+      return;
+    }
+
+    await ensureAudioGraph();
+    audio.pause();
+    audio.src = sound.src;
+    audio.loop = true;
+    audio.load();
+    audio.currentTime = 0;
+    scheduleFade(durationMs);
+    await audio.play();
+  }
+
+  function setSound(soundKey) {
+    if (!SOUNDS[soundKey]) return;
+    selectedSound = soundKey;
+    body.dataset.sound = soundKey;
+    currentSoundLabel.textContent = SOUNDS[soundKey].label;
+    soundChoices.forEach(btn => btn.classList.toggle('active', btn.dataset.sound === soundKey));
+    volume.disabled = soundKey === 'none';
+    document.dispatchEvent(new CustomEvent('ambient-sound-change', { detail: { sound: soundKey } }));
+
+    if (isPlaying && endTimeMs) {
+      const remainingMs = Math.max(1000, endTimeMs - Date.now());
+      playSelectedSound(remainingMs).catch(() => {});
+    } else if (SOUNDS[soundKey].src) {
+      audio.src = SOUNDS[soundKey].src;
+      audio.load();
+    } else {
+      clearAudioElement();
+    }
+    scheduleMenuHide();
+  }
+
+  function setMinutes(value) {
+    selectedMinutes = value === 'custom' ? 'custom' : Number(value);
+    timeChoices.forEach(btn => {
+      const key = btn.dataset.minutes === 'custom' ? 'custom' : Number(btn.dataset.minutes);
+      btn.classList.toggle('active', key === selectedMinutes);
+    });
+    customTimeWrap.hidden = selectedMinutes !== 'custom';
+    updateIdleRemaining();
+    scheduleMenuHide();
+  }
+
   async function requestWakeLock() {
     if (!wakeLockSupported || !isPlaying || document.visibilityState !== 'visible') return;
     try {
@@ -304,7 +405,6 @@
         wakeLock = null;
       }, { once: true });
     } catch (_) {
-      // A transient denial must not break playback or disturb the screen.
       wakeLock = null;
     }
   }
@@ -313,6 +413,26 @@
     if (!wakeLock) return;
     try { await wakeLock.release(); } catch (_) {}
     wakeLock = null;
+  }
+
+  function updateFullscreenButton() {
+    if (!fullscreenSupported) return;
+    fullscreenButton.textContent = document.fullscreenElement ? '全画面解除' : '全画面';
+  }
+
+  async function toggleFullscreen() {
+    if (!fullscreenSupported) return;
+    try {
+      if (document.fullscreenElement) {
+        await document.exitFullscreen();
+      } else {
+        await document.documentElement.requestFullscreen();
+      }
+    } catch (_) {
+      // Fullscreen is user-gesture and browser-policy dependent; leave the app usable if denied.
+    }
+    updateFullscreenButton();
+    scheduleMenuHide();
   }
 
   function tick() {
@@ -326,17 +446,11 @@
 
   async function startPlayback() {
     const durationMs = configuredDurationMs();
-    await ensureAudioGraph();
-
-    audio.src = SOUNDS[selectedSound].src;
-    audio.loop = true;
-    audio.currentTime = 0;
     endTimeMs = Date.now() + durationMs;
     isPlaying = true;
-    scheduleFade(durationMs);
 
     try {
-      await audio.play();
+      await playSelectedSound(durationMs);
     } catch (error) {
       isPlaying = false;
       endTimeMs = null;
@@ -400,6 +514,10 @@
     scheduleMenuHide();
   });
 
+  fullscreenButton.addEventListener('click', () => {
+    toggleFullscreen();
+  });
+
   startButton.addEventListener('click', () => {
     startPlayback().catch(() => {
       startButton.disabled = false;
@@ -409,6 +527,7 @@
 
   stopButton.addEventListener('click', () => stopPlayback(false));
 
+  document.addEventListener('fullscreenchange', updateFullscreenButton);
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {
       tick();
@@ -421,7 +540,9 @@
   });
 
   audio.src = SOUNDS[selectedSound].src;
+  volume.disabled = selectedSound === 'none';
   updateIdleRemaining();
+  updateFullscreenButton();
 
   const hintSeen = localStorage.getItem('ambientSleepHintSeen') === '1';
   if (!hintSeen) {

@@ -5,12 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
   <meta name="theme-color" content="#050609" />
   <title>Ambient Sleep</title>
-  <link rel="stylesheet" href="styles.css?v=20260908a" />
+  <link rel="stylesheet" href="styles.css?v=20260908b" />
 </head>
 <body data-sound="rain">
   <main id="app" aria-label="睡眠導入アプリ">
     <div class="ambient" aria-hidden="true">
-      <div class="bnto-bgdots" data-bnto-bgdots data-count="40"></div>
+      <div class="bnto-bgdots" data-bnto-bgdots aria-hidden="true"></div>
       <div class="glow glow-a"></div>
       <div class="glow glow-b"></div>
       <div class="glow glow-c"></div>
@@ -44,6 +44,7 @@
         <button class="sound-choice" data-sound="wave" type="button">波</button>
         <button class="sound-choice" data-sound="breeze" type="button">そよ風</button>
         <button class="sound-choice" data-sound="forest" type="button">森の奥</button>
+        <button class="sound-choice" data-sound="none" type="button">無音</button>
       </div>
 
       <div class="time-row" role="group" aria-label="再生時間">
@@ -59,9 +60,12 @@
         <input id="customMinutes" type="number" inputmode="numeric" min="1" max="720" value="45" />
       </div>
 
-      <div class="volume-row">
-        <span>音量</span>
-        <input id="volume" type="range" min="0" max="100" value="42" aria-label="音量" />
+      <div class="utility-row">
+        <div class="volume-row">
+          <span>音量</span>
+          <input id="volume" type="range" min="0" max="100" value="42" aria-label="音量" />
+        </div>
+        <button id="fullscreenButton" class="utility-action" type="button">全画面</button>
       </div>
 
       <div class="action-row">
@@ -73,6 +77,6 @@
     <audio id="ambientAudio" preload="auto" loop playsinline></audio>
   </main>
 
-  <script src="app.js?v=20260908a"></script>
+  <script src="app.js?v=20260908b"></script>
 </body>
 </html>

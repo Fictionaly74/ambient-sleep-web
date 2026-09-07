@@ -99,7 +99,7 @@
           originX: x,
           originY: y,
           baseY: y,
-          radius: (1.1 + Math.random() * 1.65) * scale,
+          radius: (1.1 + Math.random() * 1.65) * scale * (2 + Math.random()),
           alpha: depthAlpha[depth] * (0.72 + Math.random() * 0.28),
           speed: (0.45 + Math.random() * 0.52) * depthSpeed[depth],
           phase: Math.random() * Math.PI * 2,
@@ -132,21 +132,21 @@
         const scale = depthSize[particle.depth];
 
         if (mode === 'rain') {
-          particle.y += particle.speed * 1.25;
-          particle.x += Math.sin(now * 0.00018 + particle.phase) * 0.055 * scale;
+          particle.y += particle.speed * 3.75;
+          particle.x += Math.sin(now * 0.00018 + particle.phase) * 0.165 * scale;
           wrapRain(particle);
           return;
         }
 
         if (mode === 'wave') {
-          const span = width * (0.07 + particle.depth * 0.035);
+          const span = width * (0.07 + particle.depth * 0.035) * 3;
           particle.x = particle.originX + Math.sin(now * 0.00015 + particle.phase) * span;
-          particle.y = particle.originY + Math.sin(now * 0.00009 + particle.phase2) * (8 + 8 * scale);
+          particle.y = particle.originY + Math.sin(now * 0.00009 + particle.phase2) * (8 + 8 * scale) * 3;
           return;
         }
 
         if (mode === 'breeze') {
-          particle.x += particle.speed * 0.72;
+          particle.x += particle.speed * 2.16;
           const meander = Math.sin(particle.x * 0.010 + particle.phase + now * 0.00022) * particle.amplitude;
           const secondary = Math.sin(particle.x * 0.0036 + particle.phase2 - now * 0.00011) * particle.amplitude * 0.38;
           particle.y = particle.baseY + meander + secondary;
@@ -155,13 +155,13 @@
         }
 
         if (mode === 'forest') {
-          particle.x = particle.originX + Math.sin(now * 0.00007 + particle.phase) * (10 + particle.amplitude * 0.24);
-          particle.y = particle.originY + Math.cos(now * 0.00006 + particle.phase2) * (12 + particle.amplitude * 0.28);
+          particle.x = particle.originX + Math.sin(now * 0.00007 + particle.phase) * (10 + particle.amplitude * 0.24) * 3;
+          particle.y = particle.originY + Math.cos(now * 0.00006 + particle.phase2) * (12 + particle.amplitude * 0.28) * 3;
           return;
         }
 
-        particle.x = particle.originX + Math.sin(now * 0.000055 + particle.phase) * (7 + particle.amplitude * 0.14);
-        particle.y = particle.originY + Math.cos(now * 0.00005 + particle.phase2) * (8 + particle.amplitude * 0.16);
+        particle.x = particle.originX + Math.sin(now * 0.000055 + particle.phase) * (7 + particle.amplitude * 0.14) * 3;
+        particle.y = particle.originY + Math.cos(now * 0.00005 + particle.phase2) * (8 + particle.amplitude * 0.16) * 3;
       }
 
       function drawParticle(particle, color, now) {
@@ -173,11 +173,11 @@
         ctx.globalAlpha = alpha * 0.20;
         ctx.beginPath();
         if (mode === 'rain') {
-          ctx.ellipse(particle.x, particle.y, radius * 1.55, radius * 4.6, 0, 0, Math.PI * 2);
+          ctx.arc(particle.x, particle.y, radius * 2.7, 0, Math.PI * 2);
         } else if (mode === 'wave') {
-          ctx.ellipse(particle.x, particle.y, radius * 3.0, radius * 1.75, 0, 0, Math.PI * 2);
+          ctx.arc(particle.x, particle.y, radius * 2.7, 0, Math.PI * 2);
         } else if (mode === 'breeze') {
-          ctx.ellipse(particle.x, particle.y, radius * 3.5, radius * 1.45, -0.16, 0, Math.PI * 2);
+          ctx.arc(particle.x, particle.y, radius * 2.7, 0, Math.PI * 2);
         } else {
           ctx.arc(particle.x, particle.y, radius * 2.7, 0, Math.PI * 2);
         }
@@ -186,11 +186,11 @@
         ctx.globalAlpha = alpha;
         ctx.beginPath();
         if (mode === 'rain') {
-          ctx.ellipse(particle.x, particle.y, Math.max(0.55, radius * 0.48), radius * 1.9, 0, 0, Math.PI * 2);
+          ctx.arc(particle.x, particle.y, radius, 0, Math.PI * 2);
         } else if (mode === 'wave') {
-          ctx.ellipse(particle.x, particle.y, radius * 1.45, radius * 0.72, 0, 0, Math.PI * 2);
+          ctx.arc(particle.x, particle.y, radius, 0, Math.PI * 2);
         } else if (mode === 'breeze') {
-          ctx.ellipse(particle.x, particle.y, radius * 1.7, radius * 0.56, -0.16, 0, Math.PI * 2);
+          ctx.arc(particle.x, particle.y, radius, 0, Math.PI * 2);
         } else {
           ctx.arc(particle.x, particle.y, radius, 0, Math.PI * 2);
         }

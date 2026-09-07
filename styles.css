@@ -9,6 +9,7 @@
   --g2: 59, 36, 112;
   --g3: 72, 65, 126;
   --g4: 31, 43, 80;
+  --dot: hsl(210 82% 76%);
 }
 
 * { box-sizing: border-box; }
@@ -30,6 +31,7 @@ body[data-sound="rain"] {
   --g2: 58, 39, 112;
   --g3: 82, 68, 123;
   --g4: 24, 38, 74;
+  --dot: hsl(215 92% 78%);
 }
 
 body[data-sound="wave"] {
@@ -37,6 +39,7 @@ body[data-sound="wave"] {
   --g2: 18, 59, 113;
   --g3: 12, 85, 91;
   --g4: 14, 34, 68;
+  --dot: hsl(184 84% 72%);
 }
 
 body[data-sound="breeze"] {
@@ -44,6 +47,7 @@ body[data-sound="breeze"] {
   --g2: 66, 76, 36;
   --g3: 88, 101, 46;
   --g4: 21, 48, 31;
+  --dot: hsl(88 72% 72%);
 }
 
 body[data-sound="forest"] {
@@ -51,6 +55,7 @@ body[data-sound="forest"] {
   --g2: 13, 57, 52;
   --g3: 19, 39, 29;
   --g4: 8, 29, 22;
+  --dot: hsl(156 72% 68%);
 }
 
 #app {
@@ -76,6 +81,22 @@ body[data-sound="forest"] {
   pointer-events: none;
 }
 
+.bnto-bgdots {
+  --c1: var(--dot);
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0.78;
+}
+
+.bnto-bgdots canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
 .stage-tap {
   z-index: 2;
   border: 0;
@@ -89,7 +110,7 @@ body[data-sound="forest"] {
   position: absolute;
   width: 74vmax;
   height: 74vmax;
-  opacity: 0.11;
+  opacity: 0.20;
   will-change: transform, opacity, border-radius;
   background: radial-gradient(circle at 44% 46%, rgba(var(--glow), 0.56) 0%, rgba(var(--glow), 0.22) 28%, rgba(var(--glow), 0.07) 50%, rgba(var(--glow), 0) 72%);
   border-radius: 46% 54% 61% 39% / 52% 43% 57% 48%;
@@ -97,21 +118,21 @@ body[data-sound="forest"] {
 }
 
 .glow-a { --glow: var(--g1); left: -32vmax; top: -16vmax; animation: driftA 71s ease-in-out infinite alternate; }
-.glow-b { --glow: var(--g2); right: -34vmax; top: 16vh; width: 82vmax; height: 82vmax; opacity: 0.09; animation: driftB 83s ease-in-out -19s infinite alternate; }
-.glow-c { --glow: var(--g3); left: -17vmax; bottom: -36vmax; width: 88vmax; height: 88vmax; opacity: 0.075; animation: driftC 97s ease-in-out -41s infinite alternate; }
-.glow-d { --glow: var(--g4); right: -24vmax; bottom: -17vmax; width: 68vmax; height: 68vmax; opacity: 0.08; animation: driftD 109s ease-in-out -11s infinite alternate; }
+.glow-b { --glow: var(--g2); right: -34vmax; top: 16vh; width: 82vmax; height: 82vmax; opacity: 0.16; animation: driftB 83s ease-in-out -19s infinite alternate; }
+.glow-c { --glow: var(--g3); left: -17vmax; bottom: -36vmax; width: 88vmax; height: 88vmax; opacity: 0.14; animation: driftC 97s ease-in-out -41s infinite alternate; }
+.glow-d { --glow: var(--g4); right: -24vmax; bottom: -17vmax; width: 68vmax; height: 68vmax; opacity: 0.15; animation: driftD 109s ease-in-out -11s infinite alternate; }
 
 body[data-sound="rain"] .glow-a,
 body[data-sound="rain"] .glow-c { animation-direction: alternate-reverse; }
 body[data-sound="wave"] .glow { transform-origin: center; }
 body[data-sound="breeze"] .glow-b { animation-duration: 67s; }
-body[data-sound="forest"] .glow { opacity: 0.065; }
-body[data-sound="forest"] .glow-c { opacity: 0.045; }
+body[data-sound="forest"] .glow { opacity: 0.13; }
+body[data-sound="forest"] .glow-c { opacity: 0.09; }
 
 .veil {
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(0,0,0,0.16), rgba(0,0,0,0.3));
+  background: linear-gradient(180deg, rgba(0,0,0,0.08), rgba(0,0,0,0.18));
 }
 
 @keyframes driftA {

@@ -1,12 +1,12 @@
 (() => {
   'use strict';
 
-  // Replace only these paths when you have final audio assets.
+  // Rights-safe ambient assets are hosted locally with the site.
   const SOUNDS = {
-    rain:   { label: '雨',     src: 'audio/rain.wav' },
-    wave:   { label: '波',     src: 'audio/wave.wav' },
-    breeze: { label: 'そよ風', src: 'audio/breeze.wav' },
-    forest: { label: '森の奥', src: 'audio/forest.wav' },
+    rain:   { label: '雨',     src: 'audio/rain.mp3' },
+    wave:   { label: '波',     src: 'audio/wave.mp3' },
+    breeze: { label: 'そよ風', src: 'audio/breeze.mp3' },
+    forest: { label: '森の奥', src: 'audio/forest.mp3' },
   };
 
   const DEFAULT_SOUND = 'rain';
@@ -46,6 +46,136 @@
 
   const wakeLockSupported = 'wakeLock' in navigator;
   if (!wakeLockSupported) wakeWarning.hidden = false;
+
+  function initBackgroundDots() {
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    document.querySelectorAll('[data-bnto-bgdots]').forEach(bg => {
+      if (bg.dataset.bntoInit) return;
+      bg.dataset.bntoInit = '1';
+
+      const canvas = document.createElement('canvas');
+      bg.appendChild(canvas);
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
+      const count = Number.parseInt(bg.dataset.count, 10) || 40;
+      let dots = [];
+      let width = 0;
+      let height = 0;
+      let raf = 0;
+      let shown = true;
+      let lastFrame = 0;
+
+      function resize() {
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        width = Math.max(1, bg.clientWidth);
+        height = Math.max(1, bg.clientHeight);
+        canvas.width = Math.round(width * dpr);
+        canvas.height = Math.round(height * dpr);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
+
+      function seed() {
+        dots = Array.from({ length: count }, () => {
+          const angle = Math.random() * Math.PI * 2;
+          const speed = 0.045 + Math.random() * 0.11;
+          return {
+            x: Math.random() * width,
+            y: Math.random() * height,
+            r: 1.2 + Math.random() * 3.2,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            a: 0.24 + Math.random() * 0.54,
+            phase: Math.random() * Math.PI * 2,
+            pulse: 0.002 + Math.random() * 0.004,
+          };
+        });
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, width, height);
+        ctx.fillStyle = getComputedStyle(bg).getPropertyValue('--c1').trim() || '#9cc4ee';
+
+        dots.forEach(dot => {
+          const pulse = 0.82 + Math.sin(dot.phase) * 0.18;
+          ctx.globalAlpha = dot.a * pulse;
+          ctx.beginPath();
+          ctx.arc(dot.x, dot.y, dot.r, 0, Math.PI * 2);
+          ctx.fill();
+        });
+
+        ctx.globalAlpha = 1;
+      }
+
+      function stepDot(dot) {
+        const sound = document.body.dataset.sound;
+        if (sound === 'rain') {
+          dot.x += dot.vx * 0.35;
+          dot.y += Math.abs(dot.vy) + 0.06;
+        } else if (sound === 'wave') {
+          dot.x += dot.vx * 1.35;
+          dot.y += dot.vy * 0.28;
+        } else if (sound === 'breeze') {
+          dot.x += Math.abs(dot.vx) + 0.05;
+          dot.y += dot.vy * 0.65;
+        } else {
+          dot.x += dot.vx * 0.45;
+          dot.y += dot.vy * 0.45;
+        }
+
+        dot.phase += dot.pulse;
+
+        if (dot.x < -8) dot.x = width + 8;
+        if (dot.x > width + 8) dot.x = -8;
+        if (dot.y < -8) dot.y = height + 8;
+        if (dot.y > height + 8) dot.y = -8;
+      }
+
+      function tick(now) {
+        if (!lastFrame || now - lastFrame >= 33) {
+          dots.forEach(stepDot);
+          draw();
+          lastFrame = now;
+        }
+        raf = requestAnimationFrame(tick);
+      }
+
+      function start() {
+        if (!raf && shown && !reduced) raf = requestAnimationFrame(tick);
+      }
+
+      function stop() {
+        if (raf) cancelAnimationFrame(raf);
+        raf = 0;
+      }
+
+      function rebuild() {
+        resize();
+        seed();
+        draw();
+      }
+
+      rebuild();
+      start();
+
+      if ('ResizeObserver' in window) {
+        new ResizeObserver(rebuild).observe(bg);
+      } else {
+        window.addEventListener('resize', rebuild, { passive: true });
+      }
+
+      if ('IntersectionObserver' in window) {
+        new IntersectionObserver(entries => {
+          shown = entries.length ? entries[0].isIntersecting : true;
+          if (shown) start();
+          else stop();
+        }).observe(bg);
+      }
+    });
+  }
+
+  initBackgroundDots();
 
   function formatRemaining(ms) {
     const totalSeconds = Math.max(0, Math.ceil(ms / 1000));

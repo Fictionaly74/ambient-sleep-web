@@ -23,7 +23,6 @@
   const firstHint = document.getElementById('firstHint');
   const wakeWarning = document.getElementById('wakeWarning');
   const currentSoundLabel = document.getElementById('currentSoundLabel');
-  const remainingGhost = document.getElementById('remainingGhost');
   const remainingMenu = document.getElementById('remainingMenu');
   const soundChoices = [...document.querySelectorAll('.sound-choice')];
   const timeChoices = [...document.querySelectorAll('.time-choice')];
@@ -294,7 +293,6 @@
   function updateIdleRemaining() {
     if (isPlaying && endTimeMs) return;
     const text = formatRemaining(configuredDurationMs());
-    remainingGhost.textContent = text;
     remainingMenu.textContent = text;
   }
 
@@ -442,7 +440,7 @@
       if (document.fullscreenElement) {
         await document.exitFullscreen();
       } else {
-        await document.documentElement.requestFullscreen();
+        await document.documentElement.requestFullscreen({ navigationUI: 'hide' });
       }
     } catch (_) {
       // Fullscreen is user-gesture and browser-policy dependent; leave the app usable if denied.
@@ -455,7 +453,6 @@
     if (!isPlaying || !endTimeMs) return;
     const remaining = endTimeMs - Date.now();
     const text = formatRemaining(remaining);
-    remainingGhost.textContent = text;
     remainingMenu.textContent = text;
     if (remaining <= 0) stopPlayback(true);
   }

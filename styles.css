@@ -214,20 +214,6 @@ body[data-sound="none"] .glow { opacity: 0.13; }
 }
 .first-hint.visible { opacity: 1; }
 
-.remaining-ghost {
-  position: absolute;
-  z-index: 1;
-  left: 50%;
-  bottom: calc(18px + env(safe-area-inset-bottom));
-  transform: translateX(-50%);
-  font-size: 11px;
-  letter-spacing: .16em;
-  color: rgba(230, 235, 243, 0.18);
-  font-variant-numeric: tabular-nums;
-  pointer-events: none;
-  transition: opacity .5s ease;
-}
-
 .wake-warning {
   position: absolute;
   z-index: 5;

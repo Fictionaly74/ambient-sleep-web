@@ -58,6 +58,13 @@ body[data-sound="forest"] {
   --dot: hsl(156 90% 84%);
 }
 
+body[data-sound="fire"] {
+  --g1: 102, 39, 12;
+  --g2: 137, 62, 14;
+  --g3: 112, 32, 10;
+  --g4: 58, 22, 12;
+  --dot: hsl(31 100% 83%);
+}
 body[data-sound="none"] {
   --g1: 42, 46, 72;
   --g2: 36, 42, 68;
@@ -282,7 +289,7 @@ body[data-sound="none"] .glow { opacity: 0.13; }
   display: grid;
   gap: 7px;
 }
-.sound-grid { grid-template-columns: repeat(5, minmax(0,1fr)); }
+.sound-grid { grid-template-columns: repeat(3, minmax(0,1fr)); }
 .time-row { grid-template-columns: repeat(5, minmax(0,1fr)); margin-top: 8px; }
 
 .sound-choice,

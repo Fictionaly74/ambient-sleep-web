@@ -3,11 +3,12 @@
 
   // Rights-safe ambient assets are hosted locally with the site.
   const SOUNDS = {
-    rain:   { label: '雨',     src: 'audio/rain.mp3' },
-    wave:   { label: '波',     src: 'audio/wave.mp3' },
-    breeze: { label: 'そよ風', src: 'audio/breeze.mp3' },
-    forest: { label: '森の奥', src: 'audio/forest.mp3' },
-    none:   { label: '無音',   src: null },
+    rain:   { label: '髮ｨ',     src: 'audio/rain.mp3',   level: 0.72 },
+    wave:   { label: '豕｢',     src: 'audio/wave.mp3',   level: 0.68 },
+    breeze: { label: '縺昴ｈ鬚ｨ', src: 'audio/breeze.mp3', level: 1.00 },
+    forest: { label: '譽ｮ縺ｮ螂･', src: 'audio/forest.mp3', level: 1.00 },
+    fire:   { label: '辟壹″轣ｫ', src: 'audio/fire.mp3',   level: 0.90 },
+    none:   { label: '辟｡髻ｳ',   src: null,               level: 0.00 },
   };
 
   const DEFAULT_SOUND = 'rain';
@@ -55,7 +56,7 @@
 
   function initBackgroundEffect() {
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const counts = { rain: 203, wave: 126, breeze: 135, forest: 96, none: 72 };
+    const counts = { rain: 203, wave: 126, breeze: 135, forest: 96, fire: 110, none: 72 };
     const depthSize = [0.48, 0.78, 1.18];
     const depthAlpha = [0.34, 0.58, 0.88];
     const depthSpeed = [0.48, 0.82, 1.28];
@@ -127,6 +128,13 @@
         particle.y = particle.baseY;
       }
 
+      function wrapFire(particle) {
+        if (particle.y >= -24) return;
+        particle.y = height + 18 + Math.random() * height * 0.10;
+        particle.originX = Math.random() * width;
+        particle.x = particle.originX;
+      }
+
       function advance(particle, now) {
         const scale = depthSize[particle.depth];
 
@@ -158,6 +166,12 @@
           return;
         }
 
+        if (mode === 'fire') {
+          particle.y -= particle.speed * 1.95;
+          particle.x = particle.originX + Math.sin(now * 0.00105 + particle.phase) * particle.amplitude * 0.22;
+          wrapFire(particle);
+          return;
+        }
         if (mode === 'forest') {
           particle.x = particle.originX + Math.sin(now * 0.00007 + particle.phase) * (10 + particle.amplitude * 0.24) * 3;
           particle.y = particle.originY + Math.cos(now * 0.00006 + particle.phase2) * (12 + particle.amplitude * 0.28) * 3;
@@ -336,7 +350,8 @@
 
   function setVolumeFromUi(smooth = true) {
     if (!volumeGain || !audioContext) return;
-    const target = Math.max(0, Number(volume.value) / 100);
+    const soundLevel = SOUNDS[selectedSound]?.level ?? 1;
+    const target = Math.max(0, Number(volume.value) / 100) * soundLevel;
     const now = audioContext.currentTime;
     volumeGain.gain.cancelScheduledValues(now);
     if (smooth) {

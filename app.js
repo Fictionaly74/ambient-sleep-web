@@ -56,7 +56,7 @@
 
   function initBackgroundEffect() {
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const counts = { rain: 135, wave: 84, breeze: 90, forest: 64, none: 48 };
+    const counts = { rain: 203, wave: 126, breeze: 135, forest: 96, none: 72 };
     const depthSize = [0.48, 0.78, 1.18];
     const depthAlpha = [0.34, 0.58, 0.88];
     const depthSpeed = [0.48, 0.82, 1.28];
@@ -165,36 +165,39 @@
       }
 
       function drawParticle(particle, color, now) {
-        const pulse = 0.72 + 0.28 * (0.5 + 0.5 * Math.sin(now * 0.00022 + particle.phase * 0.16));
+        const pulse = 0.48 + 0.52 * (0.5 + 0.5 * Math.sin(now * 0.00022 + particle.phase * 0.16));
         const alpha = Math.min(1, particle.alpha * pulse);
         const radius = particle.radius;
 
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
         ctx.fillStyle = color;
-        ctx.globalAlpha = alpha * 0.20;
+
+        // Broad halo: deliberately soft and faint so each particle reads as light, not a flat disk.
+        ctx.globalAlpha = alpha * 0.055;
         ctx.beginPath();
-        if (mode === 'rain') {
-          ctx.arc(particle.x, particle.y, radius * 2.7, 0, Math.PI * 2);
-        } else if (mode === 'wave') {
-          ctx.arc(particle.x, particle.y, radius * 2.7, 0, Math.PI * 2);
-        } else if (mode === 'breeze') {
-          ctx.arc(particle.x, particle.y, radius * 2.7, 0, Math.PI * 2);
-        } else {
-          ctx.arc(particle.x, particle.y, radius * 2.7, 0, Math.PI * 2);
-        }
+        ctx.arc(particle.x, particle.y, radius * 5.4, 0, Math.PI * 2);
         ctx.fill();
 
-        ctx.globalAlpha = alpha;
+        ctx.globalAlpha = alpha * 0.11;
         ctx.beginPath();
-        if (mode === 'rain') {
-          ctx.arc(particle.x, particle.y, radius, 0, Math.PI * 2);
-        } else if (mode === 'wave') {
-          ctx.arc(particle.x, particle.y, radius, 0, Math.PI * 2);
-        } else if (mode === 'breeze') {
-          ctx.arc(particle.x, particle.y, radius, 0, Math.PI * 2);
-        } else {
-          ctx.arc(particle.x, particle.y, radius, 0, Math.PI * 2);
-        }
+        ctx.arc(particle.x, particle.y, radius * 3.35, 0, Math.PI * 2);
         ctx.fill();
+
+        ctx.globalAlpha = alpha * 0.24;
+        ctx.beginPath();
+        ctx.arc(particle.x, particle.y, radius * 1.9, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Bright core + blur creates the actual luminous bloom.
+        ctx.globalAlpha = Math.min(1, alpha * 1.12);
+        ctx.shadowColor = color;
+        ctx.shadowBlur = Math.max(10, radius * 3.8);
+        ctx.beginPath();
+        ctx.arc(particle.x, particle.y, radius, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.restore();
       }
 
       function draw(now = performance.now()) {

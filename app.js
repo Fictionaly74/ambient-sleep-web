@@ -165,7 +165,7 @@
       }
 
       function drawParticle(particle, color, now) {
-        const pulse = 0.48 + 0.52 * (0.5 + 0.5 * Math.sin(now * 0.00022 + particle.phase * 0.16));
+        const pulse = 0.58 + 0.42 * (0.5 + 0.5 * Math.sin(now * 0.00022 + particle.phase * 0.16));
         const alpha = Math.min(1, particle.alpha * pulse);
         const radius = particle.radius;
 
@@ -174,27 +174,35 @@
         ctx.fillStyle = color;
 
         // Broad halo: deliberately soft and faint so each particle reads as light, not a flat disk.
-        ctx.globalAlpha = alpha * 0.055;
+        ctx.globalAlpha = alpha * 0.12;
         ctx.beginPath();
-        ctx.arc(particle.x, particle.y, radius * 5.4, 0, Math.PI * 2);
+        ctx.arc(particle.x, particle.y, radius * 6.4, 0, Math.PI * 2);
         ctx.fill();
 
-        ctx.globalAlpha = alpha * 0.11;
+        ctx.globalAlpha = alpha * 0.48;
         ctx.beginPath();
-        ctx.arc(particle.x, particle.y, radius * 3.35, 0, Math.PI * 2);
+        ctx.arc(particle.x, particle.y, radius * 4.1, 0, Math.PI * 2);
         ctx.fill();
 
-        ctx.globalAlpha = alpha * 0.24;
+        ctx.globalAlpha = alpha * 0.48;
         ctx.beginPath();
-        ctx.arc(particle.x, particle.y, radius * 1.9, 0, Math.PI * 2);
+        ctx.arc(particle.x, particle.y, radius * 2.25, 0, Math.PI * 2);
         ctx.fill();
 
         // Bright core + blur creates the actual luminous bloom.
-        ctx.globalAlpha = Math.min(1, alpha * 1.12);
+        ctx.globalAlpha = Math.min(1, alpha * 1.45);
         ctx.shadowColor = color;
-        ctx.shadowBlur = Math.max(10, radius * 3.8);
+        ctx.shadowBlur = Math.max(16, radius * 5.2);
         ctx.beginPath();
         ctx.arc(particle.x, particle.y, radius, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Small white-hot centre makes the particle read as a light source rather than a coloured disc.
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.96)';
+        ctx.globalAlpha = Math.min(1, alpha * 0.82);
+        ctx.beginPath();
+        ctx.arc(particle.x, particle.y, Math.max(0.7, radius * 0.34), 0, Math.PI * 2);
         ctx.fill();
 
         ctx.restore();

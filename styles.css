@@ -31,7 +31,7 @@ body[data-sound="rain"] {
   --g2: 58, 39, 112;
   --g3: 82, 68, 123;
   --g4: 24, 38, 74;
-  --dot: hsl(215 92% 80%);
+  --dot: hsl(215 100% 90%);
 }
 
 body[data-sound="wave"] {
@@ -39,7 +39,7 @@ body[data-sound="wave"] {
   --g2: 18, 59, 113;
   --g3: 12, 85, 91;
   --g4: 14, 34, 68;
-  --dot: hsl(184 86% 74%);
+  --dot: hsl(184 100% 88%);
 }
 
 body[data-sound="breeze"] {
@@ -47,7 +47,7 @@ body[data-sound="breeze"] {
   --g2: 66, 76, 36;
   --g3: 88, 101, 46;
   --g4: 21, 48, 31;
-  --dot: hsl(88 76% 74%);
+  --dot: hsl(88 92% 88%);
 }
 
 body[data-sound="forest"] {
@@ -55,7 +55,7 @@ body[data-sound="forest"] {
   --g2: 13, 57, 52;
   --g3: 19, 39, 29;
   --g4: 8, 29, 22;
-  --dot: hsl(156 72% 70%);
+  --dot: hsl(156 90% 84%);
 }
 
 body[data-sound="none"] {
@@ -63,7 +63,7 @@ body[data-sound="none"] {
   --g2: 36, 42, 68;
   --g3: 54, 57, 76;
   --g4: 24, 28, 44;
-  --dot: hsl(225 34% 72%);
+  --dot: hsl(225 60% 84%);
 }
 
 #app {

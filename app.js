@@ -139,9 +139,14 @@
         }
 
         if (mode === 'wave') {
-          const span = width * (0.07 + particle.depth * 0.035) * 3;
-          particle.x = particle.originX + Math.sin(now * 0.00015 + particle.phase) * span;
-          particle.y = particle.originY + Math.sin(now * 0.00009 + particle.phase2) * (8 + 8 * scale) * 3;
+          // Cohesive swash/backwash: all lights share one phase, so the whole field
+          // moves in one direction, eases to a stop, then accelerates smoothly back.
+          const wavePhase = now * 0.00028;
+          const waveTravel = Math.sin(wavePhase);
+          const span = width * (0.16 + particle.depth * 0.055);
+          const shorelineCurve = 0.86 + 0.14 * Math.sin((particle.originY / Math.max(1, height)) * Math.PI);
+          particle.x = particle.originX + waveTravel * span * shorelineCurve;
+          particle.y = particle.originY;
           return;
         }
 

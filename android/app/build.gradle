@@ -1,0 +1,28 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.fictionaly74.ambientsleep'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId 'com.fictionaly74.ambientsleep'
+        minSdk 26
+        targetSdk 35
+        versionCode 1
+        versionName '1.0'
+    }
+}
+
+tasks.register('syncWebAssets', Copy) {
+    from(rootProject.projectDir.parentFile) {
+        include 'index.html'
+        include 'styles.css'
+        include 'app.js'
+        include 'audio/**'
+    }
+    into(layout.projectDirectory.dir('src/main/assets/www'))
+}
+
+preBuild.dependsOn syncWebAssets

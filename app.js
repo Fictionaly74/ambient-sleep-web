@@ -3,12 +3,12 @@
 
   // Rights-safe ambient assets are hosted locally with the site.
   const SOUNDS = {
-    rain:   { label: '髮ｨ',     src: 'audio/rain.mp3',   level: 0.72 },
-    wave:   { label: '豕｢',     src: 'audio/wave.mp3',   level: 0.68 },
-    breeze: { label: '縺昴ｈ鬚ｨ', src: 'audio/breeze.mp3', level: 1.00 },
-    forest: { label: '譽ｮ縺ｮ螂･', src: 'audio/forest.mp3', level: 1.00 },
-    fire:   { label: '辟壹″轣ｫ', src: 'audio/fire.mp3',   level: 0.90 },
-    none:   { label: '辟｡髻ｳ',   src: null,               level: 0.00 },
+    rain:   { label: '雨',     src: 'audio/rain.mp3',   level: 0.72 },
+    wave:   { label: '波',     src: 'audio/wave.mp3',   level: 0.68 },
+    breeze: { label: 'そよ風', src: 'audio/breeze.mp3', level: 1.00 },
+    forest: { label: '森の奥', src: 'audio/forest.mp3', level: 1.00 },
+    fire:   { label: '焚き火', src: 'audio/fire.mp3',   level: 0.90 },
+    none:   { label: '無音',   src: null,               level: 0.00 },
   };
 
   const DEFAULT_SOUND = 'rain';
@@ -217,7 +217,7 @@
 
         // Small white-hot centre makes the particle read as a light source rather than a coloured disc.
         ctx.shadowBlur = 0;
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.96)';
+        ctx.fillStyle = mode === 'fire' ? 'rgba(255, 58, 36, 0.98)' : 'rgba(255, 255, 255, 0.96)';
         ctx.globalAlpha = Math.min(1, alpha * 0.82);
         ctx.beginPath();
         ctx.arc(particle.x, particle.y, Math.max(0.7, radius * 0.34), 0, Math.PI * 2);

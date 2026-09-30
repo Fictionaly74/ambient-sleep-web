@@ -1,0 +1,1086 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#101d32">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" sizes="any" type="image/svg+xml" href="./icons/icon.svg">
+<link rel="icon" sizes="192x192" type="image/png" href="./icons/icon-192.png">
+<link rel="apple-touch-icon" href="./icons/icon-192.png">
+<meta name="apple-mobile-web-app-title" content="Ambient Pinball">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="description" content="An ambient pinball garden: three arrivals awaken the reels, a 120-ball jackpot, meditative sound and luminous constellations.">
+<title>Ambient Pinball v0.9.5 — a quiet little universe</title>
+<style>
+:root{color-scheme:dark;--bg:#080f22;--line:rgba(175,209,229,.19);--ink:#e5ecf0;--sub:#91a9ba;--gold:#e2d1ae;--teal:#a5dcd6;--lilac:#c4b5e5}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;overflow:hidden;background:#070e1b;color:var(--ink);font-family:Inter,"Noto Sans JP",system-ui,-apple-system,sans-serif}
+body:before{content:"";position:fixed;inset:-24%;pointer-events:none;background:radial-gradient(ellipse at 21% 25%,#496b9560,transparent 37%),radial-gradient(ellipse at 77% 72%,#5a468359,transparent 39%),radial-gradient(ellipse at 54% 50%,#1c53606e,transparent 47%);filter:blur(65px);animation:ambientDrift 28s ease-in-out infinite alternate}
+@keyframes ambientDrift{from{transform:scale(1) translate(-1%,0);opacity:.72}to{transform:scale(1.1) translate(2%,-2%);opacity:1}}
+button{font:inherit;color:inherit;-webkit-tap-highlight-color:transparent;cursor:pointer}
+button:focus-visible{outline:2px solid #a5e5d9;outline-offset:4px}
+#app{position:relative;isolation:isolate;width:min(100vw,540px);height:100dvh;margin:0 auto;display:grid;grid-template-rows:54px minmax(0,1fr);overflow:hidden;background:linear-gradient(160deg,#132238db 0%,#0d1b2fdc 42%,#172a3ad8 100%);border-inline:1px solid #a0bcdc1e;box-shadow:0 22px 100px #01040d9c,0 0 100px #728f9b15}
+#app:after{content:"";position:absolute;inset:0;pointer-events:none;z-index:20;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 150 150' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.69' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Cpath filter='url(%23n)' opacity='.027' d='M0 0h150v150H0z'/%3E%3C/svg%3E");opacity:.28}
+header{z-index:3;display:flex;justify-content:space-between;align-items:center;padding:7px 14px 6px;gap:5px;background:linear-gradient(180deg,#111c31a6,transparent)}
+.brand small{display:block;color:#dbcda9;letter-spacing:.31em;font-size:8px;text-transform:uppercase;margin-bottom:8px;text-shadow:0 0 19px #f1d8a265}
+.brand strong{display:block;font-weight:350;letter-spacing:.22em;font-size:15px;white-space:nowrap;text-shadow:0 0 20px #a7e1eb26}
+.actions{display:flex;gap:7px;align-items:center}
+.icon-btn{width:37px;height:37px;border:1px solid #b6cdd53e;background:linear-gradient(145deg,#b6e0e914,#8499c009);border-radius:50%;display:grid;place-items:center;box-shadow:inset 0 1px #e4edfc0a,0 0 20px #7ebace09;backdrop-filter:blur(8px);transition:background .3s,border-color .3s,box-shadow .3s}
+.icon-btn:hover{background:#a5cbdf20;border-color:#bde9e19a;box-shadow:0 0 20px #a7d6cf30}
+.icon-btn svg{width:16px;height:16px;fill:none;stroke:#d4e3e6;stroke-width:1.45;stroke-linecap:round;stroke-linejoin:round}
+.icon-btn[aria-pressed="true"]{border-color:#b7e9d39b;background:#5a9f9970;box-shadow:0 0 20px #a4e1d83b}
+#board-shell{position:relative;min-height:0;margin:0 2px 0;overflow:hidden;border:1px solid #b5d9e03d;border-radius:220px 220px 14px 14px / 52px 52px 14px 14px;background:#0c192c;box-shadow:inset 0 0 60px #050b1c66,0 0 30px #92bdda13,0 0 1px #e2e8f566}
+#board-shell:before{content:"";position:absolute;inset:6px;z-index:1;pointer-events:none;border:1px solid #c7dfed24;border-radius:220px 220px 12px 12px / 48px 48px 12px 12px;box-shadow:inset 0 1px 25px #c6e3ed0d,0 0 26px #99cad717}
+#board-shell:after{content:"";position:absolute;z-index:1;inset:0;pointer-events:none;border-radius:inherit;background:linear-gradient(121deg,#cee9f408,transparent 29%,transparent 77%,#cfc3ff08);box-shadow:inset 0 0 90px #00000033}
+canvas{display:block;width:100%;height:100%;touch-action:none}
+#event{position:absolute;z-index:5;top:49%;left:0;right:0;text-align:center;pointer-events:none;opacity:0;transform:translateY(12px);transition:opacity 1.15s ease,transform 1.15s ease}
+#event.show{opacity:1;transform:translateY(0)}
+#event .big{font-family:Georgia,serif;letter-spacing:.24em;font-size:clamp(24px,6vw,39px);font-weight:normal;color:#f5e7c9;text-shadow:0 0 15px #e8d7cbaf,0 0 54px #d2c1e6ba;white-space:nowrap}
+#event.alignment .big{color:var(--event-tone,#f4ebfb);text-shadow:0 0 20px var(--event-glow,#d2d7fdc2),0 0 65px #9ed9e66b}
+#event.jackpot .big{color:#ffebc9;font-size:clamp(29px,7vw,47px);text-shadow:0 0 20px #ffe6bade,0 0 62px #c7d9ffcc,0 0 110px #d4bbefab}
+#event .small{font-size:9px;letter-spacing:.24em;color:#d3e3e2;margin-top:10px;text-shadow:0 0 18px #9fe0ef7d}
+#slot{z-index:3;position:absolute;pointer-events:none;left:0;top:0;width:140px;height:53px;border:1px solid #d0e3eb74;border-radius:13px;background:radial-gradient(ellipse at 50% 0,#759cbb59,transparent 83%),linear-gradient(145deg,#32465dce,#17293ecd 72%,#36475bcc);box-shadow:inset 0 1px 0 #f5f4fa43,inset 0 0 14px #b9e5f72b,0 0 26px #aacdda23;text-align:center;display:flex;align-items:center;justify-content:center;min-height:0;--board-scale:1}
+#slot:before{content:"";position:absolute;inset:3px;border:1px solid #e2eef431;border-radius:10px;pointer-events:none}
+.reels{width:100%;display:flex;justify-content:center;gap:calc(9px * var(--board-scale))}
+.reel{width:calc(42px * var(--board-scale));height:calc(42px * var(--board-scale));min-width:0;min-height:0;border-radius:50%;border:1px solid #cee6e58c;background:radial-gradient(circle at 32% 22%,#dfe6fb24,transparent 29%),radial-gradient(circle at 50% 65%,#647c9c56,#25354c8c 82%);display:grid;place-items:center;box-shadow:inset 0 0 13px #cde4f423,0 0 16px #a6cde64c;position:relative;overflow:hidden}
+.reel:after{content:"";position:absolute;inset:4px;border:1px solid #eff0fa38;border-radius:50%;pointer-events:none}
+.reel span{display:block;font-family:Georgia,"Times New Roman",serif;font-size:calc(28px * var(--board-scale));line-height:1;color:#f2e4cb;text-shadow:0 0 12px #fee7c5b8,0 0 25px #ced9f488;transition:color .45s;user-select:none}
+.reel.spin span{filter:blur(1.3px);opacity:.65;animation:pulse .29s ease-in-out infinite alternate}
+.reel.match{border-color:var(--theme-rim,#f4dca9);box-shadow:inset 0 0 22px #f3dfa42b,0 0 20px var(--theme-halo,#f5e5a56a),0 0 48px #b2dbd923}
+.reel.match span{color:#fff3d8}
+@keyframes pulse{to{transform:translateY(4px);opacity:.4}}
+/* The bonus frame drains symmetrically from twelve o'clock toward six.
+   Both illuminated side paths are drawn from bottom centre upward; reducing
+   their visible length therefore makes the dark fronts descend together. */
+.reels{position:relative;z-index:1}
+#slot.bonus-active{border-color:var(--theme-rim,#b8e5df)}
+#slot-bonus-rim{position:absolute;inset:0;width:100%;height:100%;overflow:visible;opacity:0;transition:opacity .36s ease;z-index:2;pointer-events:none}
+#slot.bonus-active #slot-bonus-rim{opacity:1}
+#slot-bonus-rim path{fill:none;stroke-linejoin:round;stroke-linecap:round;vector-effect:non-scaling-stroke}
+#slot-bonus-track{stroke:#b4ccde;stroke-opacity:.20;stroke-width:1.9}
+.slot-bonus-halo{stroke:var(--theme-rim,#94dbdf);stroke-opacity:.38;stroke-width:7;filter:blur(3px);stroke-dasharray:100;stroke-dashoffset:0}
+.slot-bonus-progress{stroke:url(#bonus-rim-gradient);stroke-width:2.8;stroke-dasharray:100;stroke-dashoffset:0;filter:drop-shadow(0 0 3px var(--theme-rim,#b5eff3))}
+#slot-status{height:14px;font-size:9px;letter-spacing:.1em;color:#a4b9b4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+/* The cadence is a labelled two-state control, not an ambiguous falling-ball icon. */
+.brand{min-width:0}.actions{flex-shrink:0}
+.flow-btn{display:flex;align-items:center;gap:7px;height:39px;min-width:100px;padding:5px 10px;border:1px solid #bdd6de65;border-radius:21px;background:linear-gradient(130deg,#669ba13b,#6980a126);text-align:left;box-shadow:inset 0 1px #ebf8ed16;transition:background .3s,border-color .3s}
+.flow-btn svg{width:16px;height:16px;flex:none;fill:none;stroke:#c9dfe5;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.flow-copy{display:flex;flex-direction:column;gap:1px;line-height:1.13}.flow-mode{font-size:10px;font-weight:650;letter-spacing:.10em}.flow-detail{font-size:9px;color:#d6e5e7;white-space:nowrap;font-variant-numeric:tabular-nums}
+.flow-btn[aria-pressed="true"]{background:linear-gradient(120deg,#60bab360,#8385b442);border-color:#a5eee4bb;box-shadow:0 0 17px #83ceba4f}
+@media(max-width:380px){header{padding-inline:8px}.brand strong{font-size:11px;letter-spacing:.10em}.brand small{font-size:6.8px;letter-spacing:.13em}.icon-btn{width:32px;height:32px}.actions{gap:4px}.flow-btn{min-width:83px;height:35px;padding:4px 7px;gap:4px}.flow-btn svg{width:13px;height:13px}.flow-mode{font-size:9px}.flow-detail{font-size:8px}#board-shell{margin-inline:0}#slot{margin-inline:0}}
+@media(max-height:690px){#app{grid-template-rows:47px minmax(0,1fr)}header{padding-top:4px}.brand small{margin-bottom:3px}}
+@media(min-width:780px){#app{border-radius:13px}}
+@media(prefers-reduced-motion:reduce){body:before{animation:none}#event{transition:none}.reel.spin span{animation:none}.icon-btn{transition:none}}
+</style>
+
+<style>
+@media (display-mode: standalone) {
+  #app { grid-template-rows: calc(54px + env(safe-area-inset-top, 0px)) minmax(0, 1fr); padding-bottom: env(safe-area-inset-bottom, 0px); }
+  header { padding-top: calc(7px + env(safe-area-inset-top, 0px)); }
+}
+@media (display-mode: standalone) and (max-height: 690px) {
+  #app { grid-template-rows: calc(47px + env(safe-area-inset-top, 0px)) minmax(0, 1fr); }
+  header { padding-top: calc(4px + env(safe-area-inset-top, 0px)); }
+}
+</style>
+</head>
+<body>
+<main id="app" aria-label="Ambient Pinball">
+  <header>
+    <div class="brand"><small>a quiet little universe</small><strong>AMBIENT PINBALL</strong></div>
+    <div class="actions">
+      <button id="flow" class="flow-btn" type="button" aria-label="現在CALM、中央1球を3秒ごとに排出。押すとFLOW" aria-pressed="false" title="押すとFLOW（中央1球 / 1.65秒）">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><path d="M12 9v11m-5-5 5 5 5-5"/></svg>
+        <span class="flow-copy" aria-hidden="true"><span class="flow-mode" id="flow-mode">CALM</span><span class="flow-detail" id="flow-detail">1球 / 3秒</span></span>
+      </button>
+      <button id="sound" class="icon-btn" type="button" aria-label="音をオンにする" aria-pressed="false" title="音をオン／オフ">
+        <svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path id="sound-mark" d="m17 9 4 6m0-6-4 6"/></svg>
+      </button>
+      <button id="pause" class="icon-btn" type="button" aria-label="一時停止" aria-pressed="false" title="一時停止／再開">
+        <svg viewBox="0 0 24 24"><path id="pause-mark" d="M8 5v14M16 5v14"/></svg>
+      </button>
+    </div>
+  </header>
+  <section id="board-shell" aria-label="5つの投入口と左右対称のバンパー・回転風車があるボール盤面">
+    <canvas id="board"></canvas>
+    <div id="event" aria-live="polite"><div class="big" id="event-title">REACH</div><div class="small" id="event-detail">a quiet coincidence</div></div>
+    <div id="slot" aria-label="START口へ3球入るごとに起動するスロット">
+    <div class="reels" aria-live="off">
+      <div class="reel"><span>✧</span></div><div class="reel"><span>◇</span></div><div class="reel"><span>☾</span></div>
+    </div>
+    <svg id="slot-bonus-rim" aria-hidden="true" focusable="false" preserveAspectRatio="none">
+      <defs><linearGradient id="bonus-rim-gradient" x1="0%" y1="0%" x2="0%" y2="100%"><stop id="rim-stop-top" offset="0%" stop-color="#b3eff0"/><stop id="rim-stop-mid" offset="55%" stop-color="#f3dfba"/><stop id="rim-stop-bottom" offset="100%" stop-color="#c6b9f3"/></linearGradient></defs>
+      <path id="slot-bonus-track" pathLength="100"/>
+      <path id="slot-bonus-halo-left" class="slot-bonus-halo" pathLength="100"/>
+      <path id="slot-bonus-halo-right" class="slot-bonus-halo" pathLength="100"/>
+      <path id="slot-bonus-progress-left" class="slot-bonus-progress" pathLength="100"/>
+      <path id="slot-bonus-progress-right" class="slot-bonus-progress" pathLength="100"/>
+    </svg>
+    <span id="bonus-announcement" class="sr-only" aria-live="polite"></span>
+    <div id="slot-status" class="sr-only" aria-live="polite">START 0/3 · 3球ごとにスロットが回ります</div>
+    </div>
+  </section>
+
+</main>
+<script>
+(()=>{'use strict';
+const canvas=document.getElementById('board');const ctx=canvas.getContext('2d',{alpha:false});
+const shell=document.getElementById('board-shell'), reels=[...document.querySelectorAll('.reel')];
+const soundButton=document.getElementById('sound'),pauseButton=document.getElementById('pause');
+const W=480,BASE_H=610,PI=Math.PI,TAU=2*PI;let H=BASE_H;
+let display={s:1,x:0,y:0,w:0,h:0};
+let running=true,soundOn=false,flowFast=false,elapsed=0,dropTime=0.9,ringPulse=0;
+let waveCount=0,lastWaveSize=0,bumperHits=0,bumperSounds=0,lowerRailContacts=0;
+const bumperHitsByType={glass:0,wood:0,chime:0},bumperSoundsByType={glass:0,wood:0,chime:0};
+let winGlow=0,reachGlow=0,slotQueue=0,slotActive=false,eventTimeout=0;
+let slotBonusUntil=-1,slotBonusCount=0,slotBonusWasActive=false,lastSlotResult=null,jackpotWasActive=false;
+let slotWinCount=0,slotLossCount=0;
+let constellation=null,alignmentCount=0,alignmentSoundCount=0,meditationNext=10,meditationPhraseCount=0,debugNextSlot=null;
+let winningTheme=null,lastWinningTheme=null,themeNextPhrase=-1,themePhraseCount=0;
+const SLOT_ENTRY_TARGET=3,SLOT_WIN_PROBABILITY=.50,SLOT_BONUS_DURATION=10,CHARGE_TARGET=120,JACKPOT_DURATION=5;
+let slotProgress=0,slotTriggerCount=0,slotSpinCount=0;
+let chargeBalls=0,jackpotUntil=-1,jackpotCount=0,drainedBalls=0,startedSlots=0,millImpacts=0;
+const slotUI=document.getElementById('slot');
+const rimSVG=document.getElementById('slot-bonus-rim');
+const rimTrack=document.getElementById('slot-bonus-track');
+const rimHalos=[document.getElementById('slot-bonus-halo-left'),document.getElementById('slot-bonus-halo-right')];
+const rimProgress=[document.getElementById('slot-bonus-progress-left'),document.getElementById('slot-bonus-progress-right')];
+const rimActivePaths=[...rimHalos,...rimProgress];
+let rimRemainingFraction=0;
+function layoutBonusRim(){
+  const width=Math.max(1,slotUI.offsetWidth),height=Math.max(1,slotUI.offsetHeight);
+  const e=2.5,r=Math.min(11,height*.26,width*.10),right=width-e,bottom=height-e;
+  const centre=width/2;
+  // Neutral full track (one continuous rounded rectangle).
+  const track=`M ${centre} ${e} H ${right-r} Q ${right} ${e} ${right} ${e+r} V ${bottom-r} Q ${right} ${bottom} ${right-r} ${bottom} H ${e+r} Q ${e} ${bottom} ${e} ${bottom-r} V ${e+r} Q ${e} ${e} ${e+r} ${e} Z`;
+  // Two exactly mirrored half-perimeters: bottom centre (6) -> top centre (12).
+  // Rendering only the first remaining fraction keeps the glow at the bottom,
+  // creating synchronized extinction fronts from the top down on both sides.
+  const leftSide=`M ${centre} ${bottom} H ${e+r} Q ${e} ${bottom} ${e} ${bottom-r} V ${e+r} Q ${e} ${e} ${e+r} ${e} H ${centre}`;
+  const rightSide=`M ${centre} ${bottom} H ${right-r} Q ${right} ${bottom} ${right} ${bottom-r} V ${e+r} Q ${right} ${e} ${right-r} ${e} H ${centre}`;
+  rimSVG.setAttribute('viewBox',`0 0 ${width} ${height}`);
+  rimTrack.setAttribute('d',track);
+  for(const line of [rimHalos[0],rimProgress[0]])line.setAttribute('d',leftSide);
+  for(const line of [rimHalos[1],rimProgress[1]])line.setAttribute('d',rightSide);
+}
+function syncBonusRim(){
+  rimRemainingFraction=Math.max(0,Math.min(1,(slotBonusUntil-elapsed)/SLOT_BONUS_DURATION));
+  slotUI.classList.toggle('bonus-active',rimRemainingFraction>0);
+  // Each side uses its own pathLength=100; both shorten at the same rate.
+  // A full rim starts lit; at halfway only the lower half remains lit.
+  const offset=(100*(1-rimRemainingFraction)).toFixed(3);
+  for(const line of rimActivePaths)line.style.strokeDashoffset=offset;
+}
+
+let seed=49021;
+function rnd(){seed=(1664525*seed+1013904223)>>>0;return seed/4294967296}
+function lerp(a,b,t){return a+(b-a)*t}
+function clamp(x,a,b){return Math.min(b,Math.max(a,x))}
+// Restored from v0.8: required by bounceSegment() when a rail collision triggers a soft note.
+function noteAt(y){return [261.63,293.66,329.63,392,440,523.25][clamp(Math.floor(y/105),0,5)]}
+const feeders=[68,154,240,326,412],balls=[],ripples=[],dust=[];
+for(let i=0;i<100;i++)dust.push({x:rnd()*W,ny:rnd(),y:rnd()*H,r:rnd()*.9+.18,a:rnd()*.31+.03,p:rnd()*TAU});
+// 10 original bumper positions, now ~2x their v0.6 radii, plus three new symmetric pairs.
+// Their y positions scale with the *actual* full-height playfield, not a letterboxed 610px image.
+const bumpers=[
+ {x:118,fy:.15,r:21.76,type:'glass',pitch:392},{x:362,fy:.15,r:21.76,type:'glass',pitch:392},
+ {x:240,fy:.26,r:20.48,type:'chime',pitch:329.63},
+ {x:72,fy:.34,r:15.36,type:'wood',pitch:261.63},{x:408,fy:.34,r:15.36,type:'wood',pitch:261.63},
+ {x:174,fy:.405,r:24.32,type:'glass',pitch:440},{x:306,fy:.405,r:24.32,type:'glass',pitch:440},
+ {x:106,fy:.54,r:24.32,type:'wood',pitch:293.66},{x:374,fy:.54,r:24.32,type:'wood',pitch:293.66},
+ {x:240,fy:.47,r:24.58,type:'chime',pitch:392},
+ {x:70,fy:.25,r:18.4,type:'chime',pitch:523.25},{x:410,fy:.25,r:18.4,type:'chime',pitch:523.25},
+ {x:65,fy:.455,r:18.5,type:'wood',pitch:349.23},{x:415,fy:.455,r:18.5,type:'wood',pitch:349.23},
+ {x:60,fy:.60,r:18.5,type:'glass',pitch:587.33},{x:420,fy:.60,r:18.5,type:'glass',pitch:587.33}
+];
+// The hand-defined mirrored connections form a restrained, slowly revealed star map.
+// Only artwork references these indices; game physics and collision are unchanged.
+const starLinks=[[2,0],[2,1],[0,10],[1,11],[10,3],[11,4],[3,5],[4,6],
+                 [5,9],[6,9],[5,7],[6,8],[7,12],[8,13],[12,14],[13,15]];
+const ramps=[],mills=[
+ {x:157,y:345,r:19,angle:.10,omega:0,inertia:720,drag:1.35},
+ {x:323,y:345,r:19,angle:-.10,omega:0,inertia:720,drag:1.35}
+];
+const START={x1:224,x2:256,y:0};
+const slotBody={left:154,right:326,top:0,bottom:0};
+const slotWalls=[],funnel=[];
+const layout={feederY:19,drainY:BASE_H-22,railEndY:BASE_H-52,sideRailStartY:50};
+function layoutGeometry(){
+  for(const p of bumpers)p.y=H*p.fy;
+  for(const m of mills)m.y=H*.57;
+  slotBody.top=Math.round(H*.685);slotBody.bottom=slotBody.top+74;
+  START.y=slotBody.top-15;
+  layout.feederY=18;layout.drainY=H-19;layout.railEndY=H-52;
+  const railStart=slotBody.bottom+12,railEnd=layout.railEndY;
+  ramps.length=0;ramps.push(
+    {ax:31,ay:railStart,bx:196,by:railEnd},
+    {ax:449,ay:railStart,bx:284,by:railEnd},
+    {ax:196,ay:railEnd,bx:211,by:railEnd+8},
+    {ax:284,ay:railEnd,bx:269,by:railEnd+8}
+  );
+  slotWalls.length=0;slotWalls.push(
+    {ax:slotBody.left,ay:slotBody.top,bx:START.x1-4,by:slotBody.top,width:1.6},
+    {ax:START.x2+4,ay:slotBody.top,bx:slotBody.right,by:slotBody.top,width:1.6},
+    {ax:slotBody.left,ay:slotBody.top,bx:slotBody.left,by:slotBody.bottom,width:2.3},
+    {ax:slotBody.right,ay:slotBody.top,bx:slotBody.right,by:slotBody.bottom,width:2.3},
+    {ax:slotBody.left,ay:slotBody.bottom,bx:slotBody.right,by:slotBody.bottom,width:2.3}
+  );
+  funnel.length=0;funnel.push(
+    {ax:184,ay:START.y-30,bx:START.x1-3,by:START.y-3,width:1.4},
+    {ax:296,ay:START.y-30,bx:START.x2+3,by:START.y-3,width:1.4}
+  );
+}
+layoutGeometry();
+const symbols=['✧','◇','☾','◌','✦'];
+// Five self-contained visual-and-musical treatments. The slot outcome and the
+// 10-second three-port bonus remain shared gameplay logic; only art/audio differ.
+const WIN_THEMES=[
+  {id:'starlight',title:'STARLIGHT',subtitle:'a constellation awakens',rim:'#a6dff3',halo:'#acdffa77',gradient:['#c3e9ff','#9fdfd9','#d0d9ff'],rgb:'164,214,245',linkRgb:'188,223,251',notes:[392,493.88,587.33,783.99,659.25],instrument:'glass'},
+  {id:'prism',title:'PRISM',subtitle:'light becomes a spectrum',rim:'#d8bcef',halo:'#efd5fd88',gradient:['#9fe5e4','#e3c0f5','#f3d6ae'],rgb:'212,185,241',linkRgb:'216,186,241',notes:[523.25,659.25,783.99,987.77,783.99],instrument:'glass'},
+  {id:'moonlight',title:'MOONLIGHT',subtitle:'the garden takes a quiet breath',rim:'#b2bdf2',halo:'#b2b8f488',gradient:['#c6d6ff','#a9badf','#c3b1ed'],rgb:'170,186,249',linkRgb:'193,202,252',notes:[196,261.63,329.63,293.66,196],instrument:'chime'},
+  {id:'ripple',title:'RIPPLE',subtitle:'every motion leaves an echo',rim:'#96e4d7',halo:'#8fe9d987',gradient:['#aff0e9','#8bd4e4','#b9d7eb'],rgb:'122,220,207',linkRgb:'154,223,226',notes:[587.33,493.88,392,440,329.63],instrument:'water'},
+  {id:'celestial',title:'CELESTIAL',subtitle:'a soft cascade of golden stars',rim:'#f0d5a4',halo:'#f6e1b188',gradient:['#fff0c1','#efd2a4','#d5beed'],rgb:'241,207,159',linkRgb:'246,220,174',notes:[261.63,392,523.25,659.25,783.99],instrument:'chime'}
+];
+// A separate seeded art RNG cannot perturb physical ball or slot randomness.
+const celestialMotes=(()=>{
+  let s=782431;const artRnd=()=>{s=(1664525*s+1013904223)>>>0;return s/4294967296};
+  return Array.from({length:38},()=>({x:44+artRnd()*392,ny:.15+artRnd()*.72,phase:artRnd()*TAU,speed:.018+artRnd()*.027,size:.7+artRnd()*1.35}));
+})();
+let audio=null;
+function themeNow(){return slotBonusActive()&&winningTheme!==null?WIN_THEMES[winningTheme]:null}
+function setWinningTheme(index){
+  winningTheme=index;lastWinningTheme=index;themeNextPhrase=elapsed+4.6;
+  const t=WIN_THEMES[index];
+  slotUI.style.setProperty('--theme-rim',t.rim);slotUI.style.setProperty('--theme-halo',t.halo);
+  document.getElementById('event').style.setProperty('--event-tone',t.rim);
+  document.getElementById('event').style.setProperty('--event-glow',t.halo);
+  for(const [id,color] of [['rim-stop-top',t.gradient[0]],['rim-stop-mid',t.gradient[1]],['rim-stop-bottom',t.gradient[2]]])document.getElementById(id).setAttribute('stop-color',color);
+}
+function clearWinningTheme(){
+  winningTheme=null;themeNextPhrase=-1;
+  slotUI.style.removeProperty('--theme-rim');slotUI.style.removeProperty('--theme-halo');
+  const defaults=['#b3eff0','#f3dfba','#c6b9f3'];
+  ['rim-stop-top','rim-stop-mid','rim-stop-bottom'].forEach((id,i)=>document.getElementById(id).setAttribute('stop-color',defaults[i]));
+}
+
+function resize(){
+  const b=shell.getBoundingClientRect(),oldH=H,dpr=Math.min(2,window.devicePixelRatio||1);
+  const scale=Math.min((b.width-2)/W,(b.height-2)/BASE_H);
+  H=(b.height-2)/scale;
+  canvas.width=Math.max(1,Math.round(b.width*dpr));canvas.height=Math.max(1,Math.round(b.height*dpr));
+  display={w:b.width,h:b.height,s:scale,x:(b.width-W*scale)/2,y:1};
+  if(oldH!==H&&oldH>0){const k=H/oldH;for(const ball of balls){ball.y*=k;for(const t of ball.trail)t.y*=k}for(const r of ripples)r.y*=k}
+  layoutGeometry();for(const d of dust)d.y=d.ny*H;
+  slotUI.style.setProperty('--board-scale',display.s.toFixed(4));
+  slotUI.style.left=(display.x+slotBody.left*display.s)+'px';
+  slotUI.style.top=(display.y+(slotBody.top+2)*display.s)+'px';
+  slotUI.style.width=((slotBody.right-slotBody.left)*display.s)+'px';
+  slotUI.style.height=((slotBody.bottom-slotBody.top-4)*display.s)+'px';
+  layoutBonusRim();
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+}
+window.addEventListener('resize',resize);resize();
+function ripple(x,y,kind='hit'){ripples.push({x,y,life:1,kind});if(ripples.length>32)ripples.shift()}
+// Normally only the centre inlet is active; alignment opens the adjacent 02/04 inlets.
+function slotBonusActive(){return slotBonusUntil>elapsed}
+function releasePorts(){return slotBonusActive()?feeders.slice(1,4):[feeders[2]]}
+function spawnWave(){
+  const ports=releasePorts();
+  const limit=jackpotUntil>elapsed?90:(slotBonusActive()?65:45);
+  if(balls.length+ports.length>limit)return false;
+  lastWaveSize=0;
+  for(const x0 of ports){
+    const x=x0+(rnd()-.5)*6;
+    balls.push({x,y:layout.feederY+12,vx:(rnd()-.5)*39,vy:20+rnd()*28,r:2.3,trail:[],tone:160+rnd()*110});
+    ripple(x,layout.feederY+16,'drop');lastWaveSize++;
+  }
+  waveCount++;return true;
+}
+function flowLabel(){
+  const count=releasePorts().length,interval=flowFast?1.65:3;
+  const suffix=jackpotUntil>elapsed?' · ×5':'';
+  return {count,interval,description:`${count}球 / ${interval}秒${suffix}`};
+}
+function updateFlowUI(){
+  const button=document.getElementById('flow'),state=flowLabel();
+  const nextMode=flowFast?'CALM':'FLOW',nextInterval=flowFast?3:1.65;
+  button.setAttribute('aria-pressed',String(flowFast));
+  button.setAttribute('aria-label',`現在${flowFast?'FLOW':'CALM'}、${state.description}。押すと${nextMode}`);
+  button.title=`押すと${nextMode}（${state.count}球 / ${nextInterval}秒）`;
+  document.getElementById('flow-mode').textContent=flowFast?'FLOW':'CALM';
+  document.getElementById('flow-detail').textContent=state.description;
+}
+// Entire soundtrack is synthesized locally. No downloads, samples or external requests.
+// A diffused room response makes even bumper hits sound suspended in the soundscape.
+function softVoice(freq,peak,dur,kind='glass',offset=0){
+  if(!audio||!soundOn||!running)return;
+  const a=audio.ctx,at=a.currentTime+offset;
+  const timbres={
+    glass:{osc:'sine',attack:.022,partials:[[1,1],[2.006,.17],[2.997,.035]]},
+    wood:{osc:'triangle',attack:.009,partials:[[1,1],[2.002,.072]]},
+    chime:{osc:'sine',attack:.054,partials:[[1,1],[1.502,.22],[2.503,.08]]},
+    water:{osc:'sine',attack:.013,partials:[[1,1],[2.08,.055]]},
+    air:{osc:'sine',attack:.19,partials:[[1,1],[2.002,.075]]}
+  };
+  const t=timbres[kind]||timbres.glass;
+  for(const [ratio,weight] of t.partials){
+    const o=a.createOscillator(),g=a.createGain();o.type=t.osc;
+    const f=freq*ratio;o.frequency.setValueAtTime(kind==='water'?f*1.16:f,at);
+    o.frequency.exponentialRampToValueAtTime(kind==='water'?f*.78:f*.998,at+(kind==='water'?Math.min(.26,dur*.5):dur));
+    g.gain.setValueAtTime(.00001,at);
+    g.gain.exponentialRampToValueAtTime(Math.max(.000011,peak*weight),at+t.attack);
+    g.gain.exponentialRampToValueAtTime(.00001,at+dur);
+    o.connect(g).connect(audio.events);o.start(at);o.stop(at+dur+.03);
+    o.onended=()=>{o.disconnect();g.disconnect()};
+  }
+}
+function bumperSound(p,impact){
+  if(!audio||!soundOn||!running)return;
+  const now=audio.ctx.currentTime;
+  // Concurrent hits are audible, but limited to preserve a quiet overall mix.
+  if(now-audio.hitWindowStart>.075){audio.hitWindowStart=now;audio.hitWindowVoices=0}
+  if(audio.hitWindowVoices>=4)return;
+  audio.hitWindowVoices++;bumperSounds++;bumperSoundsByType[p.type]++;
+  const strength=clamp(.67+impact/1250,.67,1.08);
+  const profile={glass:[.037,.76],wood:[.030,.36],chime:[.034,1.58]}[p.type];
+  softVoice(p.pitch,profile[0]*strength,profile[1],p.type);
+}
+function ping(freq=440,level=.4,dur=.75){softVoice(freq,level*.046,dur,'glass')}
+function meditativePhrase(){
+  if(!soundOn||!audio||!running)return;
+  // A sparse C-major pentatonic response, not an attention-grabbing melody.
+  const phrases=[[392,493.88,440,587.33],[329.63,392,493.88,440],
+                 [293.66,392,440,493.88],[392,440,329.63,392]];
+  const tune=phrases[meditationPhraseCount%phrases.length];
+  [0,1.9,4.2,7.1].forEach((delay,i)=>softVoice(tune[i],.009,3.1,'air',delay));
+  meditationPhraseCount++;
+}
+function themeHarmony(index,short=false){
+  // Overlay the existing ambient pad instead of restarting or replacing the BGM.
+  if(!soundOn||!audio||!running)return;
+  const t=WIN_THEMES[index],base=short?.010:.019;
+  t.notes.forEach((f,i)=>softVoice(f,base*(i>2?.75:1),short?1.9:2.6,t.instrument,i*(short?.46:.56)));
+  if(!short){
+    const root={starlight:261.63,prism:329.63,moonlight:130.81,ripple:196,celestial:261.63}[t.id];
+    softVoice(root,.010,4.8,'air',.12);
+  }
+  alignmentSoundCount++;themePhraseCount++;
+}
+function makeAudio(){
+  const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return null;
+  const a=new AC(),master=a.createGain();master.gain.value=0;
+  const safety=a.createDynamicsCompressor();safety.threshold.value=-17;safety.knee.value=18;
+  safety.ratio.value=2.9;safety.attack.value=.015;safety.release.value=.42;
+  const meter=a.createAnalyser();meter.fftSize=1024;
+  master.connect(safety).connect(meter).connect(a.destination);
+  const events=a.createGain();events.gain.value=1;events.connect(master);
+  // Filtered echo + synthetic stereo diffuse tail; no external reverb asset.
+  const delay=a.createDelay(.8),feedback=a.createGain(),echoFilter=a.createBiquadFilter(),echoWet=a.createGain();
+  delay.delayTime.value=.39;feedback.gain.value=.19;echoFilter.type='lowpass';echoFilter.frequency.value=1600;
+  echoWet.gain.value=.22;
+  events.connect(delay);delay.connect(echoFilter);echoFilter.connect(echoWet).connect(master);
+  echoFilter.connect(feedback).connect(delay);
+  const irSeconds=1.65,ir=a.createBuffer(2,Math.round(a.sampleRate*irSeconds),a.sampleRate);
+  for(let c=0;c<2;c++){
+    const v=ir.getChannelData(c);let n=c?71839:92817,smoothed=0;
+    for(let i=0;i<v.length;i++){
+      n=(1664525*n+1013904223)>>>0;
+      smoothed=smoothed*.52+(n/2147483648-1)*.48;
+      const t=i/a.sampleRate;
+      v[i]=smoothed*.48*Math.exp(-4.5*t)*(1-Math.exp(-t*38));
+    }
+  }
+  const room=a.createConvolver(),roomWet=a.createGain();room.buffer=ir;roomWet.gain.value=.20;
+  events.connect(room);room.connect(roomWet).connect(master);
+  // Long, slow-breathing consonant pad: paired, slightly detuned voices.
+  const padFilter=a.createBiquadFilter(),padGain=a.createGain();
+  padFilter.type='lowpass';padFilter.frequency.value=780;padFilter.Q.value=.23;
+  padGain.gain.value=.94;padFilter.connect(padGain).connect(master);
+  for(const [i,f] of [130.81,196,246.94,293.66,392].entries()){
+    for(const detune of [-2.1,2.1]){
+      const osc=a.createOscillator(),g=a.createGain();
+      osc.type=i===0?'triangle':'sine';osc.frequency.value=f;osc.detune.value=detune;
+      g.gain.value=[.021,.013,.010,.007,.0034][i];osc.connect(g).connect(padFilter);osc.start();
+    }
+  }
+  const lfo=a.createOscillator(),depth=a.createGain();
+  lfo.type='sine';lfo.frequency.value=.029;depth.gain.value=145;
+  lfo.connect(depth).connect(padFilter.frequency);lfo.start();
+  const shimmerFilter=a.createBiquadFilter(),shimmerGain=a.createGain(),shimmerLfo=a.createOscillator(),shimmerDepth=a.createGain();
+  shimmerFilter.type='lowpass';shimmerFilter.frequency.value=1200;
+  shimmerGain.gain.value=.0048;shimmerFilter.connect(shimmerGain).connect(master);
+  for(const [f,d] of [[523.25,-1.6],[783.99,1.5]]){
+    const osc=a.createOscillator(),g=a.createGain();osc.type='sine';osc.frequency.value=f;osc.detune.value=d;
+    g.gain.value=.45;osc.connect(g).connect(shimmerFilter);osc.start();
+  }
+  shimmerLfo.frequency.value=.019;shimmerDepth.gain.value=.0037;
+  shimmerLfo.connect(shimmerDepth).connect(shimmerGain.gain);shimmerLfo.start();
+  // Filtered, softly breathing air texture (deterministic local noise).
+  const len=Math.floor(a.sampleRate*2),buf=a.createBuffer(1,len,a.sampleRate),samples=buf.getChannelData(0);
+  for(let i=0,ns=94731;i<len;i++){ns=(1664525*ns+1013904223)>>>0;samples[i]=(ns/2147483648-1)}
+  const noise=a.createBufferSource(),hp=a.createBiquadFilter(),lp=a.createBiquadFilter(),ng=a.createGain();
+  noise.buffer=buf;noise.loop=true;hp.type='highpass';hp.frequency.value=90;
+  lp.type='lowpass';lp.frequency.value=500;ng.gain.value=.009;
+  noise.connect(hp).connect(lp).connect(ng).connect(master);noise.start();
+  return {ctx:a,master,events,meter,hitWindowStart:-1,hitWindowVoices:0};
+}
+let audioFadeTimer=0;
+async function toggleSound(){
+  if(!audio){try{audio=makeAudio()}catch(e){console.warn('Sound unavailable:',e);return}}
+  if(!audio)return;
+  soundOn=!soundOn;clearTimeout(audioFadeTimer);
+  try{
+    if(soundOn){await audio.ctx.resume();if(!soundOn)return;meditationNext=elapsed+2.4;}
+    const a=audio.ctx,now=a.currentTime;
+    audio.master.gain.cancelScheduledValues(now);
+    audio.master.gain.setValueAtTime(audio.master.gain.value,now);
+    audio.master.gain.linearRampToValueAtTime(soundOn?.98:0,now+(soundOn?1.15:.55));
+    if(!soundOn)audioFadeTimer=setTimeout(()=>{if(!soundOn&&audio)audio.ctx.suspend()},650);
+  }catch(e){console.warn('Audio playback unavailable:',e);soundOn=false}
+  soundButton.setAttribute('aria-pressed',String(soundOn));
+  soundButton.setAttribute('aria-label',soundOn?'音をオフにする':'音をオンにする');
+  document.getElementById('sound-mark').setAttribute('d',soundOn?'M17 8q5 4 0 8M19 5q9 7 0 14':'m17 9 4 6m0-6-4 6');
+}
+soundButton.addEventListener('click',toggleSound);
+pauseButton.addEventListener('click',()=>{running=!running;pauseButton.setAttribute('aria-pressed',String(!running));pauseButton.setAttribute('aria-label',running?'一時停止':'再開');document.getElementById('pause-mark').setAttribute('d',running?'M8 5v14M16 5v14':'m8 5 10 7-10 7V5z');if(!running){if(audio&&soundOn)audio.ctx.suspend()}else if(audio&&soundOn)audio.ctx.resume()});
+document.getElementById('flow').addEventListener('click',()=>{
+  flowFast=!flowFast;dropTime=dropInterval();updateFlowUI();
+});
+function closest(x,y,ax,ay,bx,by){const dx=bx-ax,dy=by-ay,t=clamp(((x-ax)*dx+(y-ay)*dy)/(dx*dx+dy*dy),0,1);return{x:ax+dx*t,y:ay+dy*t,t}}
+function bounceSegment(b,s,coef=.75,surfaceVx=0,surfaceVy=0){const p=closest(b.x,b.y,s.ax,s.ay,s.bx,s.by),dx=b.x-p.x,dy=b.y-p.y,d2=dx*dx+dy*dy,rr=b.r+(s.width||2.4);if(d2>=rr*rr)return false;let d=Math.sqrt(d2),nx,ny;if(d<.00001){const ux=s.bx-s.ax,uy=s.by-s.ay;nx=-uy/Math.hypot(ux,uy);ny=ux/Math.hypot(ux,uy);d=.001}else{nx=dx/d;ny=dy/d}const depth=rr-d;b.x+=nx*depth;b.y+=ny*depth;const rvx=b.vx-surfaceVx,rvy=b.vy-surfaceVy,vn=rvx*nx+rvy*ny;if(vn<0){b.vx-=(1+coef)*vn*nx;b.vy-=(1+coef)*vn*ny;if(-vn>100&&rnd()<.13){ripple(p.x,p.y);ping(noteAt(p.y),.11,.3)}}return true}
+function collideBumper(b,p){let dx=b.x-p.x,dy=b.y-p.y,d2=dx*dx+dy*dy,limit=p.r+b.r;if(d2>=limit*limit)return;let dist=Math.sqrt(d2)||.001,nx=dx/dist,ny=dy/dist;b.x+=nx*(limit-dist+.25);b.y+=ny*(limit-dist+.25);const v=b.vx*nx+b.vy*ny;if(v<-8){b.vx-=(1.82*v-35)*nx;b.vy-=(1.82*v-35)*ny;if(elapsed-(p.last??-1)>.12){p.last=elapsed;p.flash=.85;ripple(p.x,p.y);bumperHits++;bumperHitsByType[p.type]++;bumperSound(p,Math.abs(v))}}}
+function collideMill(b,m){
+  for(let i=0;i<4;i++){
+    const a=m.angle+i*PI/2, ex=m.x+Math.cos(a)*m.r, ey=m.y+Math.sin(a)*m.r;
+    const p=closest(b.x,b.y,m.x,m.y,ex,ey),rx=p.x-m.x,ry=p.y-m.y;
+    let nx=b.x-p.x,ny=b.y-p.y,dist=Math.hypot(nx,ny);
+    const contact=b.r+1.6;
+    if(dist>=contact)continue;
+    if(dist<1e-5){nx=-Math.sin(a);ny=Math.cos(a);dist=1e-5}
+    else{nx/=dist;ny/=dist}
+    b.x+=nx*(contact-dist+.07);b.y+=ny*(contact-dist+.07);
+    const rn=rx*ny-ry*nx; // angular lever arm around the free-spinning axle
+    const bladeVx=-m.omega*ry,bladeVy=m.omega*rx;
+    const normalSpeed=(b.vx-bladeVx)*nx+(b.vy-bladeVy)*ny;
+    if(normalSpeed < -10){
+      const impulse=-(1+.56)*normalSpeed/(1+rn*rn/m.inertia);
+      b.vx+=impulse*nx;b.vy+=impulse*ny;
+      m.omega=clamp(m.omega-rn*impulse/m.inertia,-7,7);
+      millImpacts++;
+      if(Math.abs(normalSpeed)>95 && elapsed-(m.lastSound||-99)>.23){m.lastSound=elapsed;ping(349.23,.24,.39)}
+      ripple(p.x,p.y);
+    }
+  }
+}
+function collideBalls(){for(let i=0;i<balls.length;i++)for(let j=i+1;j<balls.length;j++){const a=balls[i],b=balls[j];let dx=b.x-a.x,dy=b.y-a.y,ds=dx*dx+dy*dy,min=a.r+b.r;if(ds>=min*min||ds<.0001)continue;const d=Math.sqrt(ds),nx=dx/d,ny=dy/d,over=(min-d)*.51;a.x-=over*nx;a.y-=over*ny;b.x+=over*nx;b.y+=over*ny;const rel=(b.vx-a.vx)*nx+(b.vy-a.vy)*ny;if(rel<0){const impulse=rel*.89;a.vx+=impulse*nx;a.vy+=impulse*ny;b.vx-=impulse*nx;b.vy-=impulse*ny}}}
+// The lower bars are *solid* one-sided rails. Their visible five-pixel half-width
+// is included in collision tests. Adaptive substeps prevent fast balls tunnelling
+// across a bar between two 60 Hz frames.
+function collideLowerRail(b,s){
+  const dx=s.bx-s.ax,dy=s.by-s.ay,len=Math.hypot(dx,dy);
+  const lo=Math.min(s.ax,s.bx),hi=Math.max(s.ax,s.bx),reach=b.r+4.8;
+  if(b.x<lo-reach||b.x>hi+reach)return false;
+  const nx=Math.sign(dx)*dy/len,ny=-Math.abs(dx)/len;
+  const t=clamp((b.x-s.ax)/dx,0,1),lineX=s.ax+dx*t,lineY=s.ay+dy*t;
+  // Vertical limits prevent distant collisions with an extended rail.
+  if(b.y<lineY-reach/(-ny)-.5||b.y>lineY+reach+6)return false;
+  const side=(b.x-lineX)*nx+(b.y-lineY)*ny;
+  if(side>=reach)return false;
+  b.x+=nx*(reach-side+.05);b.y+=ny*(reach-side+.05);
+  const toward=b.vx*nx+b.vy*ny;
+  if(toward<0){b.vx-=1.76*toward*nx;b.vy-=1.76*toward*ny;
+    if(toward < -75 && rnd()<.12)ping(293.66,.09,.19)}
+  lowerRailContacts++;return true;
+}
+// Only balls actually captured by the upper START mouth advance the reel counter.
+// Each complete set of three creates one reel spin. Keep every queued set even if
+// new balls arrive while the reels are already spinning; excess is never discarded.
+function registerSlotEntry(){
+  startedSlots++;
+  slotProgress++;
+  ripple(240,START.y,'start');
+  if(slotProgress===SLOT_ENTRY_TARGET){
+    slotProgress=0;slotTriggerCount++;slotQueue++;
+    ping(493.88,.34,.75);
+  }else{
+    ping(392,.12,.24);
+  }
+  const line=document.getElementById('slot-status');
+  if(!slotActive)line.textContent=`START ${slotProgress}/${SLOT_ENTRY_TARGET} · 3球ごとに回転`;
+}
+function collideSlot(b){
+  // A small inlet suspended over the reel box. One accepted ball = one entry.
+  if(b.y>=START.y-4 && b.y<=slotBody.top &&
+     b.x>=START.x1+b.r && b.x<=START.x2-b.r && b.vy>10){
+    registerSlotEntry();
+    return true;
+  }
+  for(const s of funnel)bounceSegment(b,s,.70);
+  for(const s of slotWalls)bounceSegment(b,s,.65);
+  // Defensive push-out if another moving ball displaced this one inside the opaque slot.
+  if(b.x>slotBody.left+b.r && b.x<slotBody.right-b.r &&
+     b.y>slotBody.top+b.r && b.y<slotBody.bottom-b.r){
+    const gaps=[b.x-slotBody.left,slotBody.right-b.x,b.y-slotBody.top,slotBody.bottom-b.y];
+    const closestSide=gaps.indexOf(Math.min(...gaps));
+    if(closestSide===0){b.x=slotBody.left-b.r-2;b.vx=-Math.abs(b.vx)*.6}
+    else if(closestSide===1){b.x=slotBody.right+b.r+2;b.vx=Math.abs(b.vx)*.6}
+    else if(closestSide===2){b.y=slotBody.top-b.r-2;b.vy=-Math.abs(b.vy)*.55}
+    else {b.y=slotBody.bottom+b.r+2;b.vy=Math.abs(b.vy)*.6}
+  }
+  return false;
+}
+function activateJackpot(){
+  jackpotUntil=elapsed+JACKPOT_DURATION;jackpotWasActive=true;jackpotCount++;chargeBalls=0;
+  dropTime=Math.min(dropTime,.035);winGlow=1;reachGlow=.45;
+  showEvent('JACKPOT','fivefold constellation · 5 seconds',JACKPOT_DURATION*1000,'jackpot');
+  updateFlowUI();
+  // Gentle rising chord instead of a casino-style fanfare.
+  [392,493.88,587.33,783.99].forEach((f,i)=>setTimeout(()=>ping(f,.36,1.3),i*160));
+}
+function drainBall(){
+  drainedBalls++;
+  ripple(240,layout.drainY,'charge');
+  if(jackpotUntil>elapsed)return; // A complete five-second celebration, then a fresh cycle.
+  chargeBalls=Math.min(CHARGE_TARGET,chargeBalls+1);
+  ping(196+chargeBalls/CHARGE_TARGET*240,.14,.21);
+  if(chargeBalls>=CHARGE_TARGET)activateJackpot();
+}
+function dropInterval(){return (flowFast?1.65:3)/(jackpotUntil>elapsed?5:1)}
+function physics(dt){
+  elapsed+=dt;dropTime-=dt;
+  // Bonus expires on simulation time so pausing does not consume reward seconds.
+  const bonus=slotBonusActive(),jackpot=jackpotUntil>elapsed;
+  if(jackpotWasActive!==jackpot){jackpotWasActive=jackpot;dropTime=Math.min(dropTime,dropInterval());updateFlowUI();}
+  if(slotBonusWasActive!==bonus){
+    slotBonusWasActive=bonus;dropTime=Math.min(dropTime,dropInterval());updateFlowUI();syncBonusRim();
+    if(!bonus){clearWinningTheme();document.getElementById('bonus-announcement').textContent='3球排出が終了しました';}
+  }
+  if(constellation && elapsed-constellation.t0>constellation.duration)constellation=null;
+  if(soundOn && audio && elapsed>=meditationNext){meditativePhrase();meditationNext=elapsed+19;}
+  if(themeNow() && elapsed>=themeNextPhrase){themeHarmony(winningTheme,true);themeNextPhrase=elapsed+5.2;}
+  if(dropTime<=0){if(spawnWave())dropTime=dropInterval();else dropTime=.085}
+  for(const p of bumpers)p.flash=Math.max(0,(p.flash||0)-dt*2.5);
+  // Windmills have no motor: their current angular momentum decays gently in air.
+  for(const m of mills){m.omega*=Math.exp(-m.drag*dt);if(Math.abs(m.omega)<.001)m.omega=0;m.angle+=m.omega*dt;}
+  winGlow=Math.max(0,winGlow-dt*.25);reachGlow=Math.max(0,reachGlow-dt*.42);ringPulse+=dt;
+  for(let i=balls.length-1;i>=0;i--){
+    const b=balls[i];b.trail.push({x:b.x,y:b.y});if(b.trail.length>8)b.trail.shift();
+    const steps=clamp(Math.ceil(Math.hypot(b.vx,b.vy)*dt/4.2),1,10),h=dt/steps;
+    let captured=false;
+    for(let n=0;n<steps;n++){
+      b.vy+=370*h;b.vx*=Math.pow(.9995,h*60);b.vy*=Math.pow(.9998,h*60);
+      b.x+=b.vx*h;b.y+=b.vy*h;
+      if(b.x<32+b.r){b.x=32+b.r;b.vx=Math.abs(b.vx)*.79}
+      if(b.x>448-b.r){b.x=448-b.r;b.vx=-Math.abs(b.vx)*.79}
+      if(b.y<13+b.r){b.y=13+b.r;b.vy=Math.abs(b.vy)*.67}
+      for(const p of bumpers)collideBumper(b,p);
+      for(const m of mills)collideMill(b,m);
+      if(collideSlot(b)){balls.splice(i,1);captured=true;break;}
+      for(const s of ramps)collideLowerRail(b,s);
+      // The former bottom START is now a drain into the JACKPOT CHARGE accumulator.
+      if(b.y>layout.drainY&&b.x>=215&&b.x<=265){balls.splice(i,1);drainBall();captured=true;break;}
+      // Fail-safe also prevents escaped balls under a rail from being rendered.
+      if(b.y>H-4){balls.splice(i,1);drainBall();captured=true;break}
+    }
+    if(captured)continue;
+    if(Math.abs(b.vx)+Math.abs(b.vy)>2000){balls.splice(i,1)}
+  }
+  collideBalls();
+  // Ball-ball impulses can shift a ball into a rail after its substep: solve again.
+  for(const b of balls){
+    for(const rail of ramps)collideLowerRail(b,rail);
+    // Do not count a late correction as a successful START crossing.
+    if(b.y>slotBody.top+3 && b.y<slotBody.bottom && b.x>slotBody.left && b.x<slotBody.right){
+      const gapL=b.x-slotBody.left,gapR=slotBody.right-b.x;
+      if(gapL<gapR){b.x=slotBody.left-b.r-3;b.vx=-Math.abs(b.vx)*.65}
+      else {b.x=slotBody.right+b.r+3;b.vx=Math.abs(b.vx)*.65}
+    }
+  }
+  for(let i=ripples.length-1;i>=0;i--){
+    ripples[i].life-=dt*(ripples[i].kind==='start'?.54:1.9);
+    if(ripples[i].life<=0)ripples.splice(i,1);
+  }
+}
+function line(x,y,x2,y2,color,width=1){ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x2,y2);ctx.lineWidth=width;ctx.strokeStyle=color;ctx.stroke()}
+function circle(x,y,r,color,width=1){ctx.beginPath();ctx.arc(x,y,r,0,TAU);ctx.strokeStyle=color;ctx.lineWidth=width;ctx.stroke()}
+// Rendering only: all gradients and glow below are decorative and never affect collision physics.
+function spot(x,y,r,color,amount=1){
+  const g=ctx.createRadialGradient(x,y,0,x,y,r);
+  g.addColorStop(0,`rgba(${color},${.15*amount})`);
+  g.addColorStop(.37,`rgba(${color},${.077*amount})`);
+  g.addColorStop(1,`rgba(${color},0)`);
+  ctx.fillStyle=g;ctx.fillRect(x-r,y-r,r*2,r*2);
+}
+function screenBackdrop(w,h){
+  const sky=ctx.createLinearGradient(0,0,w*.38,h);
+  sky.addColorStop(0,'#111d38');sky.addColorStop(.38,'#111e35');sky.addColorStop(.72,'#142b40');sky.addColorStop(1,'#101a31');
+  ctx.fillStyle=sky;ctx.fillRect(0,0,w,h);
+  ctx.save();ctx.globalCompositeOperation='screen';
+  spot(w*.21+Math.sin(elapsed*.12)*w*.06,h*.2,Math.max(w,h)*.31,'95,134,206',1);
+  spot(w*.78+Math.cos(elapsed*.095)*w*.065,h*.44,Math.max(w,h)*.37,'53,167,170',1);
+  spot(w*.42-Math.sin(elapsed*.07)*w*.08,h*.77,Math.max(w,h)*.4,'151,110,190',.68);
+  spot(w*.5,h*.54,Math.max(w,h)*.27,'116,204,188',.45);
+  ctx.restore();
+  const mid=w/2;ctx.save();ctx.strokeStyle='#b8d9ed10';ctx.lineWidth=.7;
+  for(let k=0;k<3;k++){
+    ctx.beginPath();ctx.ellipse(mid,h*.21,w*(.28+k*.16),h*(.13+k*.056),0,Math.PI*.97,Math.PI*1.99);ctx.stroke();
+    ctx.beginPath();ctx.ellipse(mid,h*.77,w*(.21+k*.23),h*(.085+k*.056),0,.05,Math.PI*.98);ctx.stroke();
+  }
+  ctx.restore();
+}
+function drawCharge(){
+  const t=chargeBalls/CHARGE_TARGET;
+  const active=jackpotUntil>elapsed;
+  const progress=active?1:t;
+  if(progress<=0)return;
+  const top=(H-48)-(H-100)*progress;
+  ctx.save();ctx.globalCompositeOperation='screen';
+  // The luminous tint fills from the bottom upward, matching balls lost through the drain.
+  const fill=ctx.createLinearGradient(0,top,0,layout.drainY+5);
+  fill.addColorStop(0,'rgba(121,207,216,0)');
+  fill.addColorStop(.21,`rgba(100,193,202,${.04+.04*progress})`);
+  fill.addColorStop(1,`rgba(148,146,217,${.06+.07*progress})`);
+  ctx.fillStyle=fill;ctx.fillRect(31,top,418,layout.drainY+5-top);
+  const colors=active?['229,209,169','188,210,241']:['118,217,212','170,153,225'];
+  const shimmer=active?(1+.16*Math.sin(elapsed*7)):1;
+  for(const x of [32,448]){
+    ctx.save();ctx.lineCap='round';
+    line(x,H-48,x,top,`rgba(${colors[0]},${.16*shimmer})`,16);
+    line(x,H-48,x,top,`rgba(${colors[0]},${(.5+.1*progress)*shimmer})`,4.8);
+    line(x,H-48,x,top,`rgba(${colors[1]},${(.62+.3*progress)*shimmer})`,1.25);
+    ctx.restore();
+  }
+  const tipGlow=ctx.createRadialGradient(240,top,0,240,top,85);
+  tipGlow.addColorStop(0,active?'rgba(240,218,185,.12)':'rgba(131,223,219,.055)');
+  tipGlow.addColorStop(1,'rgba(143,210,220,0)');
+  ctx.fillStyle=tipGlow;ctx.fillRect(145,top-90,190,180);
+  ctx.restore();
+}
+function backdrop(){
+  ctx.save();ctx.globalCompositeOperation='screen';
+  const breathe=.85+.15*Math.sin(elapsed*.4);
+  spot(240,H*.23,225,'128,152,213',.62*breathe);
+  spot(145+Math.sin(elapsed*.08)*15,H*.48,208,'74,181,179',.54);
+  spot(349-Math.sin(elapsed*.085)*13,H*.51,207,'131,114,202',.43);
+  spot(240,H*.79,235,'121,183,208',.43+winGlow*.5);
+  if(winGlow)spot(240,H*.68,290,'230,201,151',winGlow*.85);
+  if(reachGlow)spot(240,H*.68,270,'185,153,211',reachGlow*.4);
+  ctx.restore();
+  drawCharge();
+  // Two mirrored flows are ornaments, not obstacles. Keep the central play lane clear.
+  ctx.save();ctx.strokeStyle='#b9d5ee12';ctx.lineWidth=.8;
+  for(const flip of [-1,1]){
+    ctx.beginPath();ctx.moveTo(240+flip*94,H*.09);ctx.bezierCurveTo(240+flip*205,H*.17,240+flip*191,H*.38,240+flip*206,H*.48);
+    ctx.bezierCurveTo(240+flip*221,H*.64,240+flip*195,H*.78,240+flip*141,H*.91);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(240+flip*107,H*.10);ctx.bezierCurveTo(240+flip*217,H*.18,240+flip*203,H*.4,240+flip*216,H*.51);
+    ctx.strokeStyle='#e9d8ee0c';ctx.stroke();
+  }
+  ctx.restore();
+  ctx.save();
+  for(const d of dust){
+    const flick=.77+.23*Math.sin(elapsed*(.22+d.r*.35)+d.p);
+    ctx.globalAlpha=d.a*flick;ctx.fillStyle=d.r>.75?'#eee8d4':'#b4e6e5';
+    ctx.beginPath();ctx.arc(d.x,d.y,d.r,0,TAU);ctx.fill();
+    if(d.r>.8 && d.a>.25){ctx.globalAlpha=d.a*.19;line(d.x-3,d.y,d.x+3,d.y,'#bde1ee',.48);line(d.x,d.y-3,d.x,d.y+3,'#bde1ee',.48)}
+  }
+  ctx.restore();
+  const glow=winGlow*.55+reachGlow*.21;
+  if(glow){ctx.save();ctx.globalAlpha=glow;ctx.strokeStyle='#efdfb9';ctx.lineWidth=.8;
+    for(let k=0;k<3;k++){ctx.beginPath();ctx.ellipse(240,slotBody.top-13,126+k*45,96+k*47,0,0,TAU);ctx.stroke()}ctx.restore()}
+}
+// Symbol-specific atmospheric layers. Coordinates are virtual board coordinates;
+// all effects are purely decorative, with capped particle/ring counts.
+function drawThemeAtmosphere(){
+  const theme=themeNow();if(!theme)return;
+  const fade=clamp((slotBonusUntil-elapsed)/2.2,0,1);
+  ctx.save();ctx.globalCompositeOperation='screen';
+  if(theme.id==='starlight'){
+    spot(240,H*.37,165,theme.rgb,.25*fade);
+    for(let i=0;i<12;i++){
+      const p=bumpers[(i*5+2)%bumpers.length],sh=.38+.62*Math.sin(elapsed*.92+i*1.7)**2;
+      spot(p.x,p.y,p.r*1.55,theme.rgb,.20*sh*fade);
+    }
+  }else if(theme.id==='prism'){
+    // Three softly refracted luminous bands, with a moving glass-like sheen.
+    const colors=['116,221,222','188,152,230','238,202,150','159,194,243'];
+    for(let i=0;i<4;i++){
+      const px=75+(i*110+Math.sin(elapsed*.30+i)*23)%340;
+      const y=H*(.27+.13*(i%2));
+      spot(px,y,125,colors[i],(.20+.06*Math.sin(elapsed*.8+i))*fade);
+    }
+  }else if(theme.id==='moonlight'){
+    spot(240,H*.32,235,'117,144,223',.25*fade);
+    const moonY=H*(.15+(.06*Math.sin(elapsed*.22)));
+    ctx.save();ctx.globalAlpha=.20*fade;ctx.strokeStyle='#d0dcff';ctx.lineWidth=1.2;
+    ctx.beginPath();ctx.ellipse(240,moonY,146,H*.105,0,-PI*.86,-PI*.14);ctx.stroke();ctx.restore();
+    // Breath-like shafts pass quietly across the existing artwork.
+    const beam=ctx.createLinearGradient(45,H*.17,435,H*.79);
+    beam.addColorStop(0,'rgba(127,161,238,0)');beam.addColorStop(.48,`rgba(151,172,243,${.045*fade})`);
+    beam.addColorStop(.64,`rgba(191,197,245,${.085*fade})`);beam.addColorStop(1,'rgba(140,151,232,0)');
+    ctx.fillStyle=beam;ctx.fillRect(34,40,412,H-72);
+  }else if(theme.id==='ripple'){
+    // Water circles originate at varied physical bumpers; no additional geometry.
+    const sources=[bumpers[0],bumpers[1],bumpers[5],bumpers[6],bumpers[9]];
+    sources.forEach((p,i)=>{
+      const stage=(elapsed*.34+i*.33)%1.8,rad=5+stage*57;
+      circle(p.x,p.y,rad,`rgba(${theme.rgb},${(.13*(1-stage/1.8))*fade})`,1.5);
+      circle(p.x,p.y,rad*.7,`rgba(${theme.rgb},${(.065*(1-stage/1.8))*fade})`,3);
+    });
+  }else if(theme.id==='celestial'){
+    spot(240,H*.46,250,'241,201,133',.23*fade);
+    for(const p of celestialMotes){
+      ctx.globalAlpha=1;
+      // Wrap and drift upward; deterministic particles unaffected by game RNG.
+      const progress=(p.ny-elapsed*p.speed+p.phase*.11)%1;
+      const y=((progress+1)%1)*(H*.78)+H*.10;
+      const shimmer=.58+.42*Math.sin(elapsed*1.45+p.phase)**2;
+      spot(p.x+Math.sin(elapsed*.31+p.phase)*12,y,9,'255,228,172',.40*shimmer*fade);
+      ctx.globalAlpha=.7*shimmer*fade;ctx.fillStyle='#ffe8ba';
+      ctx.beginPath();ctx.arc(p.x+Math.sin(elapsed*.31+p.phase)*12,y,p.size,0,TAU);ctx.fill();
+    }
+  }
+  ctx.restore();
+}
+function drawThemeForeground(){
+  const t=themeNow();if(!t)return;
+  const remaining=clamp((slotBonusUntil-elapsed)/2.2,0,1);
+  ctx.save();ctx.globalCompositeOperation='screen';
+  if(t.id==='prism'){
+    // Faint spectral halos around alternating bumpers instead of a star map.
+    const colors=['126,220,218','213,172,241','248,209,158','159,205,242'];
+    for(let i=0;i<bumpers.length;i+=2){const p=bumpers[i];
+      const color=colors[(i/2)%4];spot(p.x,p.y,p.r*2.3,color,.28*remaining);
+      const wave=(elapsed*.27+i*.084)%1;
+      circle(p.x,p.y,p.r+wave*23,`rgba(${color},${.17*(1-wave)*remaining})`,1.25);
+    }
+  }else if(t.id==='moonlight'){
+    for(const p of [bumpers[2],bumpers[9]]){
+      circle(p.x,p.y,p.r+6+Math.sin(elapsed*.6)*3,`rgba(195,206,255,${.21*remaining})`,1.15);
+    }
+  }else if(t.id==='ripple'){
+    // Small extra echoes follow up to five actual balls; no changes to velocity.
+    for(const b of balls.slice(0,5)){
+      const rad=6+5*Math.sin(elapsed*3+b.x*.025)**2;
+      circle(b.x,b.y,rad,`rgba(151,235,218,${.17*remaining})`,1.05);
+    }
+  }else if(t.id==='celestial'){
+    for(let i=0;i<starLinks.length;i+=2){
+      const [a,b]=starLinks[i],p=bumpers[a],q=bumpers[b];
+      line(p.x,p.y,q.x,q.y,`rgba(247,222,163,${.13*remaining})`,1.15);
+    }
+  }
+  ctx.restore();
+}
+function drawFeeders(){
+  for(const x of feeders){
+    const y=layout.feederY;
+    // Closed inlets remain faintly visible as part of the symmetrical architecture.
+    ctx.save();ctx.globalAlpha=releasePorts().includes(x)?1:.22;
+    spot(x,y+3,20,'153,220,227',.39);
+    ctx.save();ctx.strokeStyle='#c8e3e4a0';ctx.lineWidth=.78;
+    ctx.beginPath();ctx.arc(x,y+2,9,PI*1.07,PI*1.93);ctx.stroke();
+    ctx.beginPath();ctx.arc(x,y+2,12,PI*1.15,PI*1.85);ctx.strokeStyle='#e5d2c44f';ctx.stroke();ctx.restore();
+    line(x-7,y-4,x-7,y+4,'#b5d9de65',.65);line(x+7,y-4,x+7,y+4,'#b5d9de65',.65);
+    spot(x,y+5,5,'180,234,222',.3);ctx.restore();
+  }
+  line(53,layout.feederY+16,427,layout.feederY+16,'#b8d7e330',.75);
+}
+function drawRails(){
+  ctx.lineCap='round';
+  for(const s of ramps){
+    // The wide inner line corresponds to the existing solid collision half-width (4.8px).
+    line(s.ax,s.ay,s.bx,s.by,'#9fdcdb0c',23);
+    line(s.ax,s.ay,s.bx,s.by,'#8cbac731',11);
+    line(s.ax,s.ay,s.bx,s.by,'#c7e8e75d',6.3);
+    line(s.ax,s.ay,s.bx,s.by,'#e0e5e6a6',1.12);
+  }
+  for(const x of [32,448]){
+    line(x,layout.feederY+28,x,ramps[0].ay,'#7acac31b',11);
+    line(x,layout.feederY+28,x,ramps[0].ay,'#b6d9db69',1.6);
+    line(x,layout.feederY+32,x,ramps[0].ay-3,'#e2d0d633',.6);
+  }
+  // The bottom mouth now feeds the JACKPOT charge, never the reels.
+  const glow=chargeBalls/CHARGE_TARGET;
+  spot(240,layout.drainY-6,70,jackpotUntil>elapsed?'238,219,163':'170,197,234',.43+glow*.38);
+  ctx.beginPath();ctx.ellipse(240,layout.drainY-3,35,10,0,PI,TAU);ctx.strokeStyle='#d5c5e9a6';ctx.lineWidth=1.7;ctx.stroke();
+  ctx.beginPath();ctx.ellipse(240,layout.drainY-3,29,6.5,0,PI,TAU);ctx.strokeStyle='#cde4eab8';ctx.lineWidth=.9;ctx.stroke();
+  // Minimalist charge gauge: the perimeter illumination is the primary display.
+  for(let i=0;i<5;i++){
+    const active=(i+1)/5<=glow+.0001||jackpotUntil>elapsed;
+    spot(218+i*11,H-8,active?5:2.5,active?'209,197,246':'132,173,194',active?.7:.12);
+    circle(218+i*11,H-8,1.5,active?'#e1d9ec':'#b4cede36',.75);
+  }
+  for(const x of [198,282]){spot(x,layout.railEndY+3,12,'199,224,225',.5);circle(x,layout.railEndY+2,3,'#d7d5cb9c',1.1)}
+}
+function drawSlotHardware(){
+  // Static physical funnel and suspended glass body frame. The reels are DOM anchored
+  // to exactly the same virtual-space rectangle (scaled by resize()).
+  spot(240,START.y,71,'149,206,215',.40);
+  for(const s of funnel){
+    line(s.ax,s.ay,s.bx,s.by,'#b1deec19',12);
+    line(s.ax,s.ay,s.bx,s.by,'#bbdadd78',2.1);
+    line(s.ax,s.ay,s.bx,s.by,'#f6e5da9f',.68);
+  }
+  const g=ctx.createRadialGradient(240,START.y-2,0,240,START.y-2,44);
+  g.addColorStop(0,'rgba(246,221,180,.27)');g.addColorStop(.48,'rgba(175,210,225,.12)');g.addColorStop(1,'rgba(149,201,226,0)');
+  ctx.fillStyle=g;ctx.fillRect(195,START.y-43,90,90);
+  ctx.beginPath();ctx.moveTo(START.x1-3,START.y);ctx.lineTo(START.x1-3,slotBody.top);ctx.moveTo(START.x2+3,START.y);ctx.lineTo(START.x2+3,slotBody.top);
+  ctx.strokeStyle='#d9e7dfbe';ctx.lineWidth=1.45;ctx.stroke();
+  ctx.fillStyle='#f1e1cabc';ctx.textAlign='center';ctx.font='8px system-ui';
+  ctx.fillText('START',240,START.y-11);
+  // Three quiet indicator stars under the glass reels: each accepted START ball
+  // illuminates the next one. They replace a large, distracting numeric HUD.
+  for(let i=0;i<SLOT_ENTRY_TARGET;i++){
+    const x=230+i*10, y=slotBody.bottom+12, lit=i<slotProgress;
+    if(lit)spot(x,y,5,'234,221,177',.37);
+    circle(x,y,1.6,lit?'#f2e4c7':'#a3c9d353',.85);
+  }
+}
+function drawConstellationLinks(){
+  if(!constellation)return;
+  const t=elapsed-constellation.t0;
+  const theme=themeNow();if(!theme||theme.id!=='starlight')return;
+  const fade=clamp((constellation.duration-t)/1.9,0,1);
+  ctx.save();ctx.globalCompositeOperation='screen';ctx.lineCap='round';
+  for(let i=0;i<starLinks.length;i++){
+    const [ia,ib]=starLinks[i],a=bumpers[ia],b=bumpers[ib];
+    const local=clamp((t-i*.19)/.84,0,1);
+    if(local<=0)continue;
+    const x=lerp(a.x,b.x,local),y=lerp(a.y,b.y,local);
+    const alpha=fade*Math.min(1,local*2);
+    line(a.x,a.y,x,y,`rgba(181,214,240,${alpha*.12})`,9);
+    line(a.x,a.y,x,y,`rgba(216,228,242,${alpha*.42})`,.88);
+    if(local<1){spot(x,y,10,'231,220,254',.50*fade);circle(x,y,1.4,`rgba(247,243,253,${fade*.7})`,1)}
+  }
+  ctx.restore();
+}
+function drawConstellationStars(){
+  if(!constellation)return;
+  const t=elapsed-constellation.t0;
+  const theme=themeNow();if(!theme||theme.id!=='starlight')return;
+  const fade=clamp((constellation.duration-t)/1.8,0,1);
+  ctx.save();ctx.globalCompositeOperation='screen';
+  const order=[2,0,1,10,11,3,4,5,6,9,7,8,12,13,14,15];
+  order.forEach((id,i)=>{
+    const p=bumpers[id],start=i*.18,age=t-start;
+    if(age<0)return;
+    const bloom=clamp(age/.38,0,1),glow=fade*bloom*(.68+.32*Math.sin(age*3.5)*Math.exp(-age*.8));
+    spot(p.x,p.y,p.r*2.8,'202,218,247',glow*.60);
+    circle(p.x,p.y,p.r+5+age*7,`rgba(225,221,250,${glow*.23*Math.exp(-age*.38)})`,1);
+  });
+  ctx.restore();
+}
+function drawBumpers(){
+ const looks={
+   glass:{rgb:'140,223,214',outer:'#a1dbdf',inner:'#e1f9ea'},
+   wood:{rgb:'235,194,150',outer:'#ecd3ac',inner:'#fff0c9'},
+   chime:{rgb:'181,174,238',outer:'#cec4fa',inner:'#efddff'}
+ };
+ for(const p of bumpers){
+   const {x,y,r}=p,flash=p.flash||0,c=looks[p.type],pulse=.9+.1*Math.sin(elapsed*.7+x);
+   const aura=ctx.createRadialGradient(x,y,0,x,y,r*3.7);
+   aura.addColorStop(0,`rgba(${c.rgb},${(.32+flash*.48)*pulse})`);
+   aura.addColorStop(.16,`rgba(${c.rgb},${.12+flash*.21})`);
+   aura.addColorStop(.55,`rgba(${c.rgb},${.028+flash*.075})`);
+   aura.addColorStop(1,`rgba(${c.rgb},0)`);
+   ctx.fillStyle=aura;ctx.beginPath();ctx.arc(x,y,r*3.7,0,TAU);ctx.fill();
+   ctx.save();ctx.shadowColor=`rgba(${c.rgb},${.38+flash*.4})`;ctx.shadowBlur=5+flash*11;
+   if(p.type==='glass'){
+     const core=ctx.createRadialGradient(x-r*.35,y-r*.4,.1,x,y,r);
+     core.addColorStop(0,`rgba(244,255,251,${.66+flash*.34})`);
+     core.addColorStop(.25,`rgba(170,239,233,${.25+flash*.25})`);
+     core.addColorStop(.8,'rgba(63,123,149,.19)');core.addColorStop(1,'rgba(97,189,208,.04)');
+     ctx.fillStyle=core;ctx.beginPath();ctx.arc(x,y,r,0,TAU);ctx.fill();
+     circle(x,y,r,c.outer,1.05);circle(x,y,r*.67,'#dbf5edac',.8);
+     ctx.beginPath();ctx.arc(x,y,r*.83,-2.6,-1.04);ctx.strokeStyle='#ffffffdc';ctx.lineWidth=1.15;ctx.stroke();
+     circle(x,y,1.3,c.inner,.95);
+   }else if(p.type==='wood'){
+     const core=ctx.createRadialGradient(x-r*.2,y-r*.25,0,x,y,r);
+     core.addColorStop(0,'#f6e7d3c7');core.addColorStop(.35,'#dcbeac83');core.addColorStop(1,'#9d7f9e17');
+     ctx.fillStyle=core;ctx.beginPath();ctx.arc(x,y,r*.93,0,TAU);ctx.fill();
+     circle(x,y,r*.97,c.outer,1);
+     // A restrained four-leaf bloom distinguishes amber bumpers from the glass discs.
+     for(let j=0;j<4;j++){
+       const angle=j*PI/2+PI/4;
+       ctx.save();ctx.translate(x,y);ctx.rotate(angle);
+       ctx.beginPath();ctx.ellipse(0,-r*.36,r*.22,r*.38,0,0,TAU);ctx.fillStyle='#ffe3b647';ctx.fill();
+       ctx.strokeStyle='#f4dbcbaa';ctx.lineWidth=.5;ctx.stroke();ctx.restore();
+     }
+     spot(x,y,r*.4,'255,244,221',.48);
+   }else{
+     const core=ctx.createRadialGradient(x-r*.2,y-r*.3,0,x,y,r);
+     core.addColorStop(0,'#f6edffca');core.addColorStop(.32,'#ccbfec88');core.addColorStop(1,'#766da625');
+     ctx.fillStyle=core;ctx.beginPath();ctx.arc(x,y,r,0,TAU);ctx.fill();
+     circle(x,y,r,c.outer,.95);
+     for(let j=0;j<6;j++){
+       const a=j*TAU/6+elapsed*.08;
+       const px=x+Math.cos(a)*r*.6,py=y+Math.sin(a)*r*.6;
+       circle(px,py,.9,'#f1dcffb1',.65)
+     }
+     circle(x,y,r*.55,'#e7d9faae',.7);circle(x,y,1.4,c.inner,1);
+   }
+   ctx.restore();
+   if(flash){const R=r*1.4+(1-flash)*r*4;circle(x,y,R,`rgba(${c.rgb},${flash*.25})`,.9)}
+ }
+}
+function drawMills(){
+  for(const m of mills){
+    spot(m.x,m.y,52,'199,182,230',.36);
+    circle(m.x,m.y,m.r+7,'#c7dbe62d',.75);
+    circle(m.x,m.y,m.r+4.5,'#e2d7fa43',.62);
+    for(let j=0;j<4;j++){
+      const a=m.angle+j*PI/2,dx=Math.cos(a),dy=Math.sin(a);
+      const ex=m.x+dx*m.r,ey=m.y+dy*m.r;
+      // Petal path surrounds the original physical blade; collision geometry is unchanged.
+      ctx.save();ctx.translate(m.x,m.y);ctx.rotate(a);
+      const petal=ctx.createLinearGradient(0,-5,m.r,5);
+      petal.addColorStop(0,'#c1bce128');petal.addColorStop(.68,'#cbc0f360');petal.addColorStop(1,'#f1e3e991');
+      ctx.beginPath();ctx.moveTo(2,0);ctx.bezierCurveTo(5,-5,m.r*.65,-5,m.r,0);
+      ctx.bezierCurveTo(m.r*.64,5,5,5,2,0);ctx.fillStyle=petal;ctx.fill();
+      ctx.strokeStyle='#e4d7ed98';ctx.lineWidth=.82;ctx.stroke();
+      ctx.beginPath();ctx.moveTo(2,0);ctx.lineTo(m.r,0);ctx.strokeStyle='#f5e7e2b5';ctx.lineWidth=.68;ctx.stroke();
+      ctx.restore();
+      spot(ex,ey,8,'214,194,243',.55);
+      circle(ex,ey,1.55,'#f3e0ed',1.05);
+    }
+    const hub=ctx.createRadialGradient(m.x-2,m.y-2,.3,m.x,m.y,6);
+    hub.addColorStop(0,'#fff1db');hub.addColorStop(.4,'#bbdfd7');hub.addColorStop(1,'#647b99');
+    ctx.fillStyle=hub;ctx.beginPath();ctx.arc(m.x,m.y,3.2,0,TAU);ctx.fill();
+    circle(m.x,m.y,4.7,'#f7e2efad',.75);
+  }
+}
+function drawBall(b){
+  for(let k=0;k<b.trail.length;k++){
+    const t=b.trail[k],alpha=(k+1)/b.trail.length;
+    ctx.fillStyle=`rgba(169,226,238,${alpha*alpha*.1})`;
+    ctx.beginPath();ctx.arc(t.x,t.y,b.r*(.4+alpha*.9),0,TAU);ctx.fill();
+  }
+  const halo=ctx.createRadialGradient(b.x,b.y,0,b.x,b.y,b.r*5.1);
+  halo.addColorStop(0,'rgba(246,253,248,.89)');
+  halo.addColorStop(.09,'rgba(215,249,244,.78)');
+  halo.addColorStop(.26,'rgba(161,235,226,.37)');
+  halo.addColorStop(.63,'rgba(124,198,229,.11)');
+  halo.addColorStop(1,'rgba(98,168,218,0)');
+  ctx.fillStyle=halo;ctx.beginPath();ctx.arc(b.x,b.y,b.r*5.1,0,TAU);ctx.fill();
+  ctx.fillStyle='#f9fffc';ctx.beginPath();ctx.arc(b.x-.33,b.y-.37,b.r*.49,0,TAU);ctx.fill();
+}
+function drawRipples(){
+  for(const p of ripples){
+    const t=1-p.life,r=p.kind==='start'?lerp(8,65,t):p.kind==='drop'?lerp(3,15,t):lerp(7,31,t);
+    const rgb=p.kind==='start'?'239,216,174':p.kind==='drop'?'177,228,231':'169,219,219';
+    circle(p.x,p.y,r,`rgba(${rgb},${p.life*.42})`,p.kind==='start'?1.6:.9);
+    if(p.life>.3)circle(p.x,p.y,r*.78,`rgba(${rgb},${p.life*.09})`,4);
+  }
+}
+function render(){
+  syncBonusRim();
+  const {w,h,s,x,y}=display;ctx.setTransform(canvas.width/w,0,0,canvas.height/h,0,0);
+  screenBackdrop(w,h);
+  ctx.save();ctx.translate(x,y);ctx.scale(s,s);
+  backdrop();drawThemeAtmosphere();drawFeeders();drawRails();drawSlotHardware();drawConstellationLinks();drawBumpers();drawThemeForeground();drawConstellationStars();drawMills();drawRipples();
+  for(const b of balls)drawBall(b);
+  ctx.restore();
+}
+function startAlignment(symbolIndex){
+  // Bonus mechanics are identical for all five symbols; only art/music differ.
+  const index=Number.isInteger(symbolIndex)&&symbolIndex>=0&&symbolIndex<WIN_THEMES.length?symbolIndex:0;
+  const theme=WIN_THEMES[index];alignmentCount++;
+  const refreshed=slotBonusActive();
+  slotBonusUntil=elapsed+SLOT_BONUS_DURATION;slotBonusCount++;
+  setWinningTheme(index); // A new match replaces the theme and resets its ten seconds.
+  slotBonusWasActive=true;dropTime=Math.min(dropTime,.12);updateFlowUI();syncBonusRim();
+  document.getElementById('bonus-announcement').textContent=theme.title+(refreshed?' 再当選、残り10秒に更新':' 当選、3球排出を10秒間開始');
+  constellation={t0:elapsed,duration:5.6};
+  winGlow=.85;reachGlow=.6;
+  ripple(240,slotBody.top-7,'start');
+  themeHarmony(index);  if(jackpotUntil<=elapsed)showEvent(theme.title,theme.subtitle,4200,'alignment');
+}
+function showEvent(title,detail,duration=2300,kind=''){const el=document.getElementById('event');el.classList.toggle('jackpot',kind==='jackpot');el.classList.toggle('alignment',kind==='alignment');document.getElementById('event-title').textContent=title;document.getElementById('event-detail').textContent=detail;el.classList.remove('show');void el.offsetWidth;el.classList.add('show');clearTimeout(eventTimeout);eventTimeout=setTimeout(()=>el.classList.remove('show'),duration)}
+// One 50% Bernoulli trial per spin; nonwinning outcomes can still show REACH.
+function chooseSlotResult(random){
+  const first=Math.floor(random()*symbols.length);
+  if(random()<SLOT_WIN_PROBABILITY)return [first,first,first];
+  if(random()<.55){
+    const other=(first+1+Math.floor(random()*(symbols.length-1)))%symbols.length;
+    return [first,first,other];
+  }
+  const second=(first+1+Math.floor(random()*(symbols.length-1)))%symbols.length;
+  const third=Math.floor(random()*symbols.length);
+  return [first,second,third]; // Second differs from first, so cannot be three-of-a-kind.
+}
+function sleep(ms){return new Promise(resolve=>setTimeout(resolve,ms))}
+async function spin(){if(slotActive||slotQueue<=0||!running)return;slotActive=true;slotQueue--;slotSpinCount++;const line=document.getElementById('slot-status');reels.forEach(e=>e.classList.remove('match'));line.textContent='SLOWLY FINDING A PATTERN…';
+const forced=!!debugNextSlot;
+const results=forced?debugNextSlot.slice():chooseSlotResult(rnd);
+debugNextSlot=null;
+lastSlotResult=results.slice();
+const timers=reels.map((reel,i)=>{reel.classList.add('spin');return setInterval(()=>{reel.querySelector('span').textContent=symbols[Math.floor(rnd()*symbols.length)]},110+i*26)});
+try{await sleep(1040);clearInterval(timers[0]);reels[0].classList.remove('spin');reels[0].querySelector('span').textContent=symbols[results[0]];ping(392,.27,.52);
+await sleep(660);clearInterval(timers[1]);reels[1].classList.remove('spin');reels[1].querySelector('span').textContent=symbols[results[1]];ping(493.88,.3,.62);
+if(results[0]===results[1]){reels[0].classList.add('match');reels[1].classList.add('match');reachGlow=1;line.textContent='REACH · ふたつの音が重なる';(jackpotUntil>elapsed?null:showEvent('REACH','two stars, one more to bloom',1200));softVoice(587.33,.022,1.8,'chime')}
+await sleep(950);clearInterval(timers[2]);reels[2].classList.remove('spin');reels[2].querySelector('span').textContent=symbols[results[2]];
+if(results.every(v=>v===results[0])){slotWinCount++;reels.forEach(r=>r.classList.add('match'));line.textContent=WIN_THEMES[results[0]].title+' · 静かな一致';startAlignment(results[0])}
+else {slotLossCount++;if(results[0]===results[1])line.textContent='余韻を残して、また流れる';else line.textContent=`START ${slotProgress}/${SLOT_ENTRY_TARGET} · 3球ごとに回転`;ping(440,.22,.74)}
+await sleep(950)}finally{for(const t of timers)clearInterval(t);for(const r of reels)r.classList.remove('spin');slotActive=false;if(slotQueue>0)setTimeout(spin,1100)}}
+// Fixed-step simulation for consistent movement across high/low refresh rate screens.
+let prev=performance.now(),accumulator=0;function frame(now){let dt=Math.min(.055,(now-prev)/1000);prev=now;if(running){accumulator+=dt;let steps=0;while(accumulator>=1/60&&steps<4){physics(1/60);accumulator-=1/60;steps++}if(steps===4)accumulator=0;if(slotQueue&&!slotActive)spin()}render();requestAnimationFrame(frame)}
+requestAnimationFrame(frame);
+// Debug-only, read-only counters for automated smoke tests.
+window.__ambientPinballStatus=()=>({activeBalls:balls.length,elapsed:+elapsed.toFixed(2),queuedSlots:slotQueue,slotActive,flowFast,soundOn,running,emitterCount:feeders.length,bumperCount:bumpers.length,millCount:mills.length,
+  ballRadius:2.3,bumperRadii:bumpers.map(b=>b.r),millRadius:mills[0].r,
+  audioState:audio?audio.ctx.state:'not-initialized',audioRms:(()=>{
+    if(!audio)return 0;
+    const samples=new Float32Array(audio.meter.fftSize);audio.meter.getFloatTimeDomainData(samples);
+    return +Math.sqrt(samples.reduce((sum,x)=>sum+x*x,0)/samples.length).toFixed(4);
+  })(),waveCount,lastWaveSize,bumperHits,bumperSounds,bumperTypes:bumpers.map(p=>p.type),bumperHitsByType:{...bumperHitsByType},bumperSoundsByType:{...bumperSoundsByType},lowerRailContacts,slotHeight:Math.round(slotUI.getBoundingClientRect().height),
+  millAngles:mills.map(m=>+m.angle.toFixed(3)),millAngularSpeeds:mills.map(m=>+m.omega.toFixed(3)),millImpacts,
+  slotProgress,slotEntryTarget:SLOT_ENTRY_TARGET,slotWinProbability:SLOT_WIN_PROBABILITY,slotTriggerCount,slotSpinCount,slotWinCount,slotLossCount,lastSlotResult,slotBonusActive:slotBonusActive(),slotBonusRemaining:+Math.max(0,slotBonusUntil-elapsed).toFixed(2),slotBonusRimActive:slotUI.classList.contains('bonus-active'),slotBonusRimFraction:+rimRemainingFraction.toFixed(3),slotBonusCount,activeReleasePorts:releasePorts(),alignmentCount,constellationActive:!!constellation,alignmentSoundCount,themePhraseCount,winningTheme:themeNow()?.id||null,lastWinningTheme:lastWinningTheme===null?null:WIN_THEMES[lastWinningTheme].id,themeRim:slotUI.style.getPropertyValue('--theme-rim'),meditationPhraseCount,chargeBalls,chargeTarget:CHARGE_TARGET,fieldHeight:+H.toFixed(1),feederY:layout.feederY,drainY:+layout.drainY.toFixed(1),slotTop:slotBody.top,flowLabel:document.getElementById('flow-mode').textContent,jackpotActive:jackpotUntil>elapsed,jackpotRemaining:+Math.max(0,jackpotUntil-elapsed).toFixed(2),jackpotCount,drainedBalls,startedSlots,
+  dropInterval:+dropInterval().toFixed(3) });
+if(new URLSearchParams(location.search).has('test')||window.__ambientPinballSmokeTest===true){
+  window.__ambientPinballTest={
+    resetBalls:()=>{balls.length=0;dropTime=999},
+    forceNextDrop:()=>{dropTime=0},
+    injectBall:(x,y,vx,vy)=>balls.push({x,y,vx,vy,r:2.3,trail:[]}),
+    step:dt=>physics(dt),
+    getBalls:()=>balls.map(({x,y,vx,vy})=>({x,y,vx,vy})),
+    playBumper:(type,impact=210)=>{const p=bumpers.find(p=>p.type===type);if(p){p.flash=.85;bumperHits++;bumperHitsByType[type]++;bumperSound(p,impact)}},
+    injectDrain:()=>drainBall(),
+    injectStart:()=>registerSlotEntry(),
+    resetSlot:()=>{slotProgress=0;slotQueue=0;slotTriggerCount=0;slotSpinCount=0;startedSlots=0;constellation=null;clearWinningTheme();lastWinningTheme=null;alignmentCount=0;slotWinCount=0;slotLossCount=0;lastSlotResult=null;slotBonusUntil=-1;slotBonusWasActive=false;updateFlowUI();syncBonusRim();for(const r of reels)r.classList.remove('match')},
+    forceNextSlot:indices=>{if(!Array.isArray(indices)||indices.length!==3||!indices.every(n=>Number.isInteger(n)&&n>=0&&n<symbols.length))throw Error('Require three valid symbol indices');debugNextSlot=indices.slice()},
+    startAlignmentForVisualTest:(index=0)=>startAlignment(index),
+    sampleSlotProbability:(draws=10000)=>{
+      // Independent deterministic RNG so sampling never advances live-game randomness.
+      let s=51713;const random=()=>{s=(1664525*s+1013904223)>>>0;return s/4294967296};
+      let wins=0;for(let i=0;i<draws;i++){
+        const result=chooseSlotResult(random);
+        if(result.every(v=>v===result[0]))wins++;
+      }
+      return {draws,wins,rate:wins/draws};
+    },
+    winThemes:()=>WIN_THEMES.map(t=>({id:t.id,title:t.title,color:t.rim})),
+    resetCharge:()=>{chargeBalls=0;jackpotUntil=-1;jackpotCount=0;drainedBalls=0;dropTime=999},
+    getMills:()=>mills.map(m=>({angle:m.angle,omega:m.omega})),
+    setMill:(i,angle,omega)=>{mills[i].angle=angle;mills[i].omega=omega},
+    getGeometry:()=>({H,feeders:feeders.map(x=>({x,y:layout.feederY})),bumpers:bumpers.map(({x,y,r,type})=>({x,y,r,type})),mills:mills.map(({x,y,r})=>({x,y,r})),slot:{...slotBody},start:{...START},ramps:ramps.map(s=>({...s})),drainY:layout.drainY}),
+    railY:x=>{const s=ramps.find(s=>x>=Math.min(s.ax,s.bx)&&x<=Math.max(s.ax,s.bx));if(!s)return null;return s.ay+(x-s.ax)*(s.by-s.ay)/(s.bx-s.ax)}
+  };
+}
+})();
+</script>
+
+<script>
+/* PWA shell only. Do not gate gameplay or WebAudio on service worker availability. */
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js', {scope: './'})
+      .catch(err => console.warn('Offline caching unavailable:', err));
+  });
+}
+</script>
+</body>
+</html>

@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="description" content="An ambient pinball garden: three arrivals awaken the reels, a 120-ball jackpot, meditative sound and luminous constellations.">
-<title>Ambient Pinball v0.9.5 — a quiet little universe</title>
+<title>Ambient Pinball v0.9.6 — a quiet little universe</title>
 <style>
 :root{color-scheme:dark;--bg:#080f22;--line:rgba(175,209,229,.19);--ink:#e5ecf0;--sub:#91a9ba;--gold:#e2d1ae;--teal:#a5dcd6;--lilac:#c4b5e5}
 *{box-sizing:border-box}
@@ -287,10 +287,13 @@ window.addEventListener('resize',resize);resize();
 function ripple(x,y,kind='hit'){ripples.push({x,y,life:1,kind});if(ripples.length>32)ripples.shift()}
 // Normally only the centre inlet is active; alignment opens the adjacent 02/04 inlets.
 function slotBonusActive(){return slotBonusUntil>elapsed}
-function releasePorts(){return slotBonusActive()?feeders.slice(1,4):[feeders[2]]}
+function releasePorts(){
+  if(jackpotUntil>elapsed)return feeders.slice();
+  return slotBonusActive()?feeders.slice(1,4):[feeders[2]];
+}
 function spawnWave(){
   const ports=releasePorts();
-  const limit=jackpotUntil>elapsed?90:(slotBonusActive()?65:45);
+  const limit=jackpotUntil>elapsed?130:(slotBonusActive()?65:45);
   if(balls.length+ports.length>limit)return false;
   lastWaveSize=0;
   for(const x0 of ports){
